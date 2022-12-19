@@ -43,6 +43,9 @@ class RomBrowserWidget : public QStackedWidget
     bool IsRefreshingRomList(void);
     void StopRefreshRomList(void);
 
+    void ShowList(void);
+    void ShowGrid(void);
+
   private:
     Widget::RomBrowserListViewWidget* listViewWidget = nullptr;
     QStandardItemModel* listViewModel                = nullptr;

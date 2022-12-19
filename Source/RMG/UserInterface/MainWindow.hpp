@@ -74,6 +74,9 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     bool ui_LaunchInFullscreen   = false;
     bool ui_RefreshRomListAfterEmulation = false;
 
+    bool ui_ShowToolbar   = false;
+    bool ui_ShowStatusbar = false;
+
     bool ui_ManuallyPaused = true;
 
     int ui_TimerId      = 0;
@@ -103,6 +106,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     void launchEmulationThread(QString, QString);
     void launchEmulationThread(QString);
 
+    void configureActions(void);
     void connectActionSignals(void);
     void updateActions(bool, bool);
 
@@ -152,7 +156,12 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     void on_Action_Settings_Input(void);
     void on_Action_Settings_Settings(void);
 
+    void on_Action_View_Toolbar(bool);
+    void on_Action_View_StatusBar(bool);
+    void on_Action_View_GameList(bool);
+    void on_Action_View_GameGrid(bool);
     void on_Action_View_Fullscreen(void);
+    void on_Action_View_RefreshGames(void);
 
     void on_Action_Help_Github(void);
     void on_Action_Help_About(void);

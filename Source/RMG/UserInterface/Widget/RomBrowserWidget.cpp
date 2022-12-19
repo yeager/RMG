@@ -120,6 +120,16 @@ void RomBrowserWidget::StopRefreshRomList(void)
     return this->romSearcherThread->Stop();
 }
 
+void RomBrowserWidget::ShowList(void)
+{
+    this->setCurrentWidget(this->listViewWidget);
+}
+
+void RomBrowserWidget::ShowGrid(void)
+{
+    this->setCurrentWidget(this->gridViewWidget);
+}
+
 void RomBrowserWidget::on_DoubleClicked(const QModelIndex& index)
 {
     QStandardItemModel* model = model = this->listViewModel;;

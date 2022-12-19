@@ -393,8 +393,12 @@ void SettingsDialog::loadInterfaceStyleSettings(void)
 
 void SettingsDialog::loadInterfaceMiscSettings(void)
 {
+#ifdef UPDATER
     this->checkForUpdatesCheckBox->setChecked(CoreSettingsGetBoolValue(SettingsID::GUI_CheckForUpdates));
+#endif // UPDATER
+#ifdef DISCORD_RPC
     this->discordRpcCheckBox->setChecked(CoreSettingsGetBoolValue(SettingsID::GUI_DiscordRpc));
+#endif // DISCORD_RPC
 }
 
 void SettingsDialog::loadDefaultCoreSettings(void)
@@ -521,8 +525,12 @@ void SettingsDialog::loadDefaultInterfaceStyleSettings(void)
 
 void SettingsDialog::loadDefaultInterfaceMiscSettings(void)
 {
+#ifdef UPDATER
     this->checkForUpdatesCheckBox->setChecked(CoreSettingsGetDefaultBoolValue(SettingsID::GUI_CheckForUpdates));
+#endif // UPDATER
+#ifdef DISCORD_RPC
     this->discordRpcCheckBox->setChecked(CoreSettingsGetDefaultBoolValue(SettingsID::GUI_DiscordRpc));
+#endif // DISCORD_RPC
 }
 
 void SettingsDialog::saveSettings(void)
@@ -704,13 +712,20 @@ void SettingsDialog::saveInterfaceRomBrowserSettings(void)
 
 void SettingsDialog::saveInterfaceStyleSettings(void)
 {
+#ifdef _WIN32
     CoreSettingsSetValue(SettingsID::GUI_Style, this->styleComboBox->currentData().toString().toStdString());
+    CoreSettingsSetValue(SettingsID::GUI_IconTheme, this->iconThemeComboBox->currentText().toStdString());
+#endif // _WIN32
 }
 
 void SettingsDialog::saveInterfaceMiscSettings(void)
 {
+#ifdef UPDATER
     CoreSettingsSetValue(SettingsID::GUI_CheckForUpdates, this->checkForUpdatesCheckBox->isChecked());
+#endif // UPDATER
+#ifdef DISCORD_RPC
     CoreSettingsSetValue(SettingsID::GUI_DiscordRpc, this->discordRpcCheckBox->isChecked());
+#endif // DISCORD_RPC
 }
 
 void SettingsDialog::commonHotkeySettings(int action)
@@ -827,6 +842,7 @@ void SettingsDialog::commonPluginSettings(int action)
 
 void SettingsDialog::commonInterfaceStyleSettings(int action)
 {
+#ifdef _WIN32
     this->styleComboBox->clear();
     this->styleComboBox->addItem("None", "");
 
@@ -867,6 +883,12 @@ void SettingsDialog::commonInterfaceStyleSettings(int action)
         this->styleComboBox->addItem("", "");
         this->styleComboBox->setCurrentText("");
     }
+
+    QString currentIconTheme = action == 0 ?
+                QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_IconTheme)) :
+                QString::fromStdString(CoreSettingsGetDefaultStringValue(SettingsID::GUI_IconTheme));
+    this->iconThemeComboBox->setCurrentText(currentIconTheme);
+#endif // _WIN32
 }
 
 void SettingsDialog::setIconsForEmulationInfoText(void)
