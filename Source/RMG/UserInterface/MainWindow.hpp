@@ -20,6 +20,7 @@
 #include "Callbacks.hpp"
 
 #include <QAction>
+#include <QToolBar>
 #include <QCloseEvent>
 #include <QMainWindow>
 #include <QSettings>
@@ -61,22 +62,19 @@ class MainWindow : public QMainWindow
 
     QMenuBar *menuBar;
     QMenu *menuBar_Menu;
-    QAction *action_File_OpenRom;
-    QAction *action_File_OpenCombo;
-    QAction *action_File_StartEmulation;
-    QAction *action_File_EndEmulation;
-    QAction *action_File_Language;
+
     QAction *action_File_ChooseDirectory;
     QAction *action_File_RefreshRomList;
-    QAction *action_File_RecentRom;
-    QAction *action_File_RecentRomDirectories;
-    QAction *action_File_Exit;
+
+    QAction *action_System_OpenRom;
+    QAction *action_System_OpenCombo;
+    QAction *action_System_Shutdown;
+    QMenu *menu_System_Reset;
     QAction *action_System_SoftReset;
     QAction *action_System_HardReset;
     QAction *action_System_Pause;
     QAction *action_System_CaptureScreenshot;
     QAction *action_System_LimitFPS;
-    QAction *action_System_SwapDisk;
     QAction *action_System_SaveState;
     QAction *action_System_SaveAs;
     QAction *action_System_LoadState;
@@ -84,14 +82,20 @@ class MainWindow : public QMainWindow
     QMenu *menu_System_CurrentSaveState;
     QAction *action_System_Cheats;
     QAction *action_System_GSButton;
-    QAction *action_Options_FullScreen;
-    QAction *action_Options_ConfigGfx;
-    QAction *action_Options_ConfigAudio;
-    QAction *action_Options_ConfigRsp;
-    QAction *action_Options_ConfigControl;
-    QAction *action_Options_Settings;
-    QAction *action_Help_HomePage;
+    QAction *action_System_Exit;
+
+    QAction *action_Settings_Graphics;
+    QAction *action_Settings_Audio;
+    QAction *action_Settings_Rsp;
+    QAction *action_Settings_Input;
+    QAction *action_Settings_Settings;
+
+    QAction *action_View_Fullscreen;
+
+    QAction *action_Help_Github;
     QAction *action_Help_About;
+
+    QToolBar *toolBar;
 
     QByteArray ui_Geometry;
     bool ui_Geometry_Saved = false;
@@ -131,6 +135,9 @@ class MainWindow : public QMainWindow
     void menuBar_Init(void);
     void menuBar_Setup(bool, bool);
 
+    void toolBar_Init(void);
+    void toolBar_Setup(bool, bool);
+
     void emulationThread_Init(void);
     void emulationThread_Connect(void);
     void emulationThread_Launch(QString, QString);
@@ -159,18 +166,17 @@ class MainWindow : public QMainWindow
     void on_networkAccessManager_Finished(QNetworkReply *);
 #endif // UPDATER
 
-    void on_Action_File_OpenRom(void);
-    void on_Action_File_OpenCombo(void);
-    void on_Action_File_EndEmulation(void);
     void on_Action_File_ChooseDirectory(void);
     void on_Action_File_RefreshRomList(void);
-    void on_Action_File_Exit(void);
+
+    void on_Action_System_OpenRom(void);
+    void on_Action_System_OpenCombo(void);
+    void on_Action_System_Shutdown(void);
     void on_Action_System_SoftReset(void);
     void on_Action_System_HardReset(void);
     void on_Action_System_Pause(void);
     void on_Action_System_GenerateBitmap(void);
     void on_Action_System_LimitFPS(void);
-    void on_Action_System_SwapDisk(void);
     void on_Action_System_SaveState(void);
     void on_Action_System_SaveAs(void);
     void on_Action_System_LoadState(void);
@@ -178,13 +184,17 @@ class MainWindow : public QMainWindow
     void on_Action_System_CurrentSaveState(int);
     void on_Action_System_Cheats(void);
     void on_Action_System_GSButton(void);
-    void on_Action_Options_FullScreen(void);
-    void on_Action_Options_ConfigGfx(void);
-    void on_Action_Options_ConfigAudio(void);
-    void on_Action_Options_ConfigRsp(void);
-    void on_Action_Options_ConfigControl(void);
-    void on_Action_Options_Settings(void);
-    void on_Action_Help_HomePage(void);
+    void on_Action_System_Exit(void);
+
+    void on_Action_Settings_Graphics(void);
+    void on_Action_Settings_Audio(void);
+    void on_Action_Settings_Rsp(void);
+    void on_Action_Settings_Input(void);
+    void on_Action_Settings_Settings(void);
+
+    void on_Action_View_Fullscreen(void);
+
+    void on_Action_Help_Github(void);
     void on_Action_Help_About(void);
 
     void on_Emulation_Started(void);

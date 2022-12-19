@@ -13,6 +13,9 @@
 #include "Thread/RomSearcherThread.hpp"
 #include "UserInterface/NoFocusDelegate.hpp"
 
+#include "RomBrowserListViewWidget.hpp"
+#include "RomBrowserGridViewWidget.hpp"
+
 #include <QHeaderView>
 #include <QList>
 #include <QStandardItemModel>
@@ -20,15 +23,15 @@
 #include <QTableView>
 #include <QMenu>
 #include <QAction>
-
-#define MAX_ROM_INFO 50
+#include <QGridLayout>
+#include <QListWidget>
+#include <QStackedWidget>
 
 namespace UserInterface
 {
 namespace Widget
 {
-
-class RomBrowserWidget : public QTableView
+class RomBrowserWidget : public QStackedWidget
 {
     Q_OBJECT
 
@@ -40,78 +43,32 @@ class RomBrowserWidget : public QTableView
     bool IsRefreshingRomList(void);
     void StopRefreshRomList(void);
 
-    void SetDirectory(QString);
-
   private:
-    QString directory;
+    Widget::RomBrowserListViewWidget* listViewWidget = nullptr;
+    QStandardItemModel* listViewModel                = nullptr;
+    Widget::RomBrowserGridViewWidget* gridViewWidget = nullptr;
+    QStandardItemModel* gridViewModel                = nullptr;
 
-    QMenu* contextMenu;
-    QAction* action_PlayGame;
-    QAction* action_PlayGameWithDisk;
-    QAction* action_RefreshRomList;
-    QAction* action_ChooseRomDirectory;
-    QAction* action_RomInformation;
-    QAction* action_EditGameSettings;
-    QAction* action_EditCheats;
+    Thread::RomSearcherThread* romSearcherThread = nullptr;
 
-    void contextMenu_Init(void);
-    void contextMenu_Setup(void);
-
-    void contextMenu_Actions_Init(void);
-    void contextMenu_Actions_Setup(void);
-    void contextMenu_Actions_Connect(void);
-    void contextMenu_Actions_Update(void);
-
-    QStandardItemModel *model_Model;
-    std::vector<int> model_Columns;
-
-    void model_Init(void);
-    void model_Setup(void);
-    void model_Setup_Labels(void);
-
-    NoFocusDelegate *widget_Delegate;
-    void widget_Init(void);
-
-    Thread::RomSearcherThread *romSearcher_Thread;
-    void romSearcher_Init(void);
-    void romSearcher_Launch(QString);
-
-    void column_SetSize();
-    int column_GetSizeSettingIndex(int);
-
-    void launchSelectedRom(void);
-
-    QString getCurrentRom(void);
-
-  protected:
-    void dragMoveEvent(QDragMoveEvent *);
-    void dragEnterEvent(QDragEnterEvent *);
-    void dropEvent(QDropEvent *);
+    QString coversDirectory;
 
   private slots:
-    void customContextMenuRequested(QPoint);
-    void on_columnResized(int, int, int);
+    void on_DoubleClicked(const QModelIndex& index);
 
-    void on_Action_PlayGame(void);
-    void on_Action_PlayGameWithDisk(void);
-    void on_Action_RefreshRomList(void);
-    void on_Action_ChooseRomDirectory(void);
-    void on_Action_RomInformation(void);
-    void on_Action_EditGameSettings(void);
-    void on_Action_EditCheats(void);
+    void on_ZoomIn(void);
+    void on_ZoomOut(void);
 
-  public slots:
-    void on_Row_DoubleClicked(const QModelIndex &);
-    void on_RomBrowserThread_Received(QString file, CoreRomHeader header, CoreRomSettings settings);
+    void on_RomBrowserThread_RomFound(QString file, CoreRomHeader header, CoreRomSettings settings);
 
   signals:
-    void on_RomBrowser_PlayGame(QString);
-    void on_RomBrowser_PlayGameWithDisk(QString);
-    void on_RomBrowser_FileDropped(QDropEvent *);
-    void on_RomBrowser_EditGameSettings(QString);
-    void on_RomBrowser_Cheats(QString);
-    void on_RomBrowser_ChooseRomDirectory(void);
-    void on_RomBrowser_RomInformation(QString);
+    void PlayGame(QString);
+    void PlayGameWithDisk(QString);
+    void FileDropped(QDropEvent *);
+    void EditGameSettings(QString);
+    void Cheats(QString);
+    void ChooseRomDirectory(void);
+    void RomInformation(QString);
 };
 } // namespace Widget
 } // namespace UserInterface

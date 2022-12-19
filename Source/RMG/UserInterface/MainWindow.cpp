@@ -71,6 +71,9 @@ bool MainWindow::Init(QApplication* app)
     this->menuBar_Init();
     this->menuBar_Setup(false, false);
 
+    this->toolBar_Init();
+    this->toolBar_Setup(false, false);
+
     this->emulationThread_Init();
     this->emulationThread_Connect();
 
@@ -101,7 +104,7 @@ void MainWindow::OpenROM(QString file, QString disk, bool fullscreen)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    this->on_Action_File_EndEmulation();
+    this->on_Action_System_Shutdown();
 
     this->ui_Widget_RomBrowser->StopRefreshRomList();
 
@@ -132,25 +135,21 @@ void MainWindow::ui_Init(void)
     this->ui_EventFilter = new EventFilter(this);
     this->ui_StatusBar_Label = new QLabel(this);
 
-    QString dir;
-    dir = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::RomBrowser_Directory));
-
-    this->ui_Widget_RomBrowser->SetDirectory(dir);
     this->ui_Widget_RomBrowser->RefreshRomList();
 
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_PlayGame, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::PlayGame, this,
             &MainWindow::on_RomBrowser_PlayGame);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_PlayGameWithDisk, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::PlayGameWithDisk, this,
             &MainWindow::on_RomBrowser_PlayGameWithDisk);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_EditGameSettings, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::EditGameSettings, this,
             &MainWindow::on_RomBrowser_EditGameSettings);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_Cheats, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::Cheats, this,
             &MainWindow::on_RomBrowser_Cheats);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_ChooseRomDirectory, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::ChooseRomDirectory, this,
             &MainWindow::on_Action_File_ChooseDirectory);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_RomInformation, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::RomInformation, this,
             &MainWindow::on_RomBrowser_RomInformation);
-    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::on_RomBrowser_FileDropped, this,
+    connect(this->ui_Widget_RomBrowser, &Widget::RomBrowserWidget::FileDropped, this,
             &MainWindow::on_EventFilter_FileDropped);
 
     connect(this->ui_EventFilter, &EventFilter::on_EventFilter_KeyPressed, this,
@@ -180,7 +179,12 @@ void MainWindow::ui_Setup(QApplication* app)
         this->resize(610, 540);
     }
 
-    this->statusBar()->setHidden(false);
+    // set icon theme
+    QPalette palette = app->palette();
+    bool dark = palette.windowText().color().value() > palette.window().color().value();
+    QIcon::setThemeName(dark ? "white" : "black");
+
+    this->statusBar()->setHidden(true);
     this->statusBar()->addPermanentWidget(this->ui_StatusBar_Label, 1);
     this->ui_TimerTimeout = CoreSettingsGetIntValue(SettingsID::GUI_StatusbarMessageDuration);
 
@@ -242,6 +246,7 @@ void MainWindow::ui_InEmulation(bool inEmulation, bool isPaused)
     if (!this->ui_NoSwitchToRomBrowser)
     {
         this->menuBar_Setup(inEmulation, isPaused);
+        this->toolBar_Setup(inEmulation, isPaused);
     }
 
     if (inEmulation)
@@ -256,12 +261,14 @@ void MainWindow::ui_InEmulation(bool inEmulation, bool isPaused)
 
         this->ui_Widgets->setCurrentIndex(1);
         this->ui_SaveGeometry();
+        this->statusBar()->setHidden(false);
     }
     else if (!this->ui_NoSwitchToRomBrowser)
     {
         this->setWindowTitle(this->ui_WindowTitle);
         this->ui_Widgets->setCurrentIndex(0);
         this->ui_LoadGeometry();
+        this->statusBar()->setHidden(true);
     }
     else
     {
@@ -323,106 +330,105 @@ void MainWindow::menuBar_Setup(bool inEmulation, bool isPaused)
 
     this->menuBar->clear();
 
-    this->menuBar_Menu = this->menuBar->addMenu("File");
-    this->menuBar_Menu->addAction(this->action_File_OpenRom);
-    this->menuBar_Menu->addAction(this->action_File_OpenCombo);
-    this->menuBar_Menu->addSeparator();
-    this->menuBar_Menu->addAction(this->action_File_StartEmulation);
-    this->menuBar_Menu->addAction(this->action_File_EndEmulation);
-    this->menuBar_Menu->addSeparator();
+    this->menu_System_Reset = new QMenu("Reset", this);
+    this->menu_System_Reset->setIcon(QIcon::fromTheme("restart-line"));
+    this->menu_System_Reset->addAction(action_System_SoftReset);
+    this->menu_System_Reset->addAction(action_System_HardReset);
 
-    // TODO: Add language support
-    QMenu *langMenu = new QMenu("Language", this);
-    langMenu->addAction("English");
-    this->menuBar_Menu->addMenu(langMenu);
+    this->menuBar_Menu = this->menuBar->addMenu("System");
+    this->menuBar_Menu->addAction(this->action_System_OpenRom);
+    this->menuBar_Menu->addAction(this->action_System_OpenCombo);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addAction(this->action_System_Shutdown);
+    this->menuBar_Menu->addMenu(this->menu_System_Reset);
+    this->menuBar_Menu->addAction(this->action_System_Pause);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addAction(this->action_System_CaptureScreenshot);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addAction(this->action_System_LimitFPS);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addAction(this->action_System_SaveState);
+    this->menuBar_Menu->addAction(this->action_System_SaveAs);
+    this->menuBar_Menu->addAction(this->action_System_LoadState);
+    this->menuBar_Menu->addAction(this->action_System_Load);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addMenu(this->menu_System_CurrentSaveState);
 
-    if (!inEmulation)
+    this->menu_System_CurrentSaveState->clear();
+
+    QActionGroup *slotActionGroup = new QActionGroup(this);
+    QList<QAction *> slotActions;
+    QAction *slotAction;
+    int currentSlot = CoreGetSaveStateSlot();
+    for (int i = 0; i < 10; i++)
     {
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addAction(this->action_File_ChooseDirectory);
-        this->menuBar_Menu->addAction(this->action_File_RefreshRomList);
-        this->menuBar_Menu->addSeparator();
+        slotActions.append(new QAction(this));
+        slotAction = slotActions.at(i);
 
-        // TODO: Actually implement this
-        /*
-        this->menuBar_Menu->addAction(this->action_File_RecentRom);
-        this->menuBar_Menu->addAction(this->action_File_RecentRomDirectories);
-        */
-    }
-    this->menuBar_Menu->addSeparator();
-    this->menuBar_Menu->addAction(this->action_File_Exit);
+        slotAction->setText("Slot " + QString::number(i));
+        slotAction->setCheckable(true);
+        slotAction->setChecked(i == currentSlot);
+        slotAction->setActionGroup(slotActionGroup);
 
-    if (inEmulation)
-    {
-        QMenu *resetMenu = new QMenu("Reset", this);
-        resetMenu->addAction(action_System_SoftReset);
-        resetMenu->addAction(action_System_HardReset);
-
-        this->menuBar_Menu = this->menuBar->addMenu("System");
-        this->menuBar_Menu->addMenu(resetMenu);
-        this->menuBar_Menu->addAction(this->action_System_Pause);
-        this->menuBar_Menu->addAction(this->action_System_CaptureScreenshot);
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addAction(this->action_System_LimitFPS);
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addAction(this->action_System_SwapDisk);
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addAction(this->action_System_SaveState);
-        this->menuBar_Menu->addAction(this->action_System_SaveAs);
-        this->menuBar_Menu->addAction(this->action_System_LoadState);
-        this->menuBar_Menu->addAction(this->action_System_Load);
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addMenu(this->menu_System_CurrentSaveState);
-
-        this->menu_System_CurrentSaveState->clear();
-
-        QActionGroup *slotActionGroup = new QActionGroup(this);
-        QList<QAction *> slotActions;
-        QAction *slotAction;
-        int currentSlot = CoreGetSaveStateSlot();
-        for (int i = 0; i < 10; i++)
+        connect(slotAction, &QAction::triggered, [=](bool checked)
         {
-            slotActions.append(new QAction(this));
-            slotAction = slotActions.at(i);
-
-            slotAction->setText("Slot " + QString::number(i));
-            slotAction->setCheckable(true);
-            slotAction->setChecked(i == currentSlot);
-            slotAction->setActionGroup(slotActionGroup);
-
-            connect(slotAction, &QAction::triggered, [=](bool checked)
+            if (checked)
             {
-                if (checked)
-                {
-                    int slot = slotAction->text().split(" ").last().toInt();
-                    this->on_Action_System_CurrentSaveState(slot);
-                }
-            });
+                int slot = slotAction->text().split(" ").last().toInt();
+                this->on_Action_System_CurrentSaveState(slot);
+            }
+        });
 
-            this->menu_System_CurrentSaveState->addAction(slotAction);
-        }
-
-        this->menuBar_Menu->addSeparator();
-        this->menuBar_Menu->addAction(this->action_System_Cheats);
-        this->menuBar_Menu->addAction(this->action_System_GSButton);
+        this->menu_System_CurrentSaveState->addAction(slotAction);
     }
 
-    this->menuBar_Menu = this->menuBar->addMenu("Options");
-    this->menuBar_Menu->addAction(this->action_Options_FullScreen);
     this->menuBar_Menu->addSeparator();
-    this->menuBar_Menu->addAction(this->action_Options_ConfigGfx);
-    this->menuBar_Menu->addAction(this->action_Options_ConfigAudio);
-    this->menuBar_Menu->addAction(this->action_Options_ConfigRsp);
-    this->menuBar_Menu->addAction(this->action_Options_ConfigControl);
+    this->menuBar_Menu->addAction(this->action_System_Cheats);
+    this->menuBar_Menu->addAction(this->action_System_GSButton);
     this->menuBar_Menu->addSeparator();
-    this->menuBar_Menu->addAction(this->action_Options_Settings);
+    this->menuBar_Menu->addAction(this->action_System_Exit);
+
+    this->menuBar_Menu = this->menuBar->addMenu("Settings");
+    this->menuBar_Menu->addAction(this->action_Settings_Graphics);
+    this->menuBar_Menu->addAction(this->action_Settings_Audio);
+    this->menuBar_Menu->addAction(this->action_Settings_Rsp);
+    this->menuBar_Menu->addAction(this->action_Settings_Input);
+    this->menuBar_Menu->addSeparator();
+    this->menuBar_Menu->addAction(this->action_Settings_Settings);
+
+    this->menuBar_Menu = this->menuBar->addMenu("View");
+    this->menuBar_Menu->addAction(this->action_View_Fullscreen);
 
     this->menuBar_Menu = this->menuBar->addMenu("Help");
-    this->menuBar_Menu->addAction(this->action_Help_HomePage);
+    this->menuBar_Menu->addAction(this->action_Help_Github);
     this->menuBar_Menu->addSeparator();
     this->menuBar_Menu->addAction(this->action_Help_About);
 
     this->setMenuBar(menuBar);
+}
+
+void MainWindow::toolBar_Init(void)
+{
+    this->toolBar = this->addToolBar("Test");
+}
+
+void MainWindow::toolBar_Setup(bool inEmulation, bool isPaused)
+{
+    this->toolBar->clear();
+
+    this->toolBar->setMovable(false);
+    this->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonTextUnderIcon);
+
+    this->toolBar->addAction(this->action_System_OpenRom);
+    this->toolBar->addAction(this->action_System_OpenCombo);
+    this->toolBar->addSeparator();
+    this->toolBar->addAction(this->action_System_Shutdown);
+    this->toolBar->addAction(this->action_System_SoftReset);
+    this->toolBar->addAction(this->action_System_Pause);
+    this->toolBar->addAction(this->action_System_CaptureScreenshot);
+    this->toolBar->addAction(this->action_View_Fullscreen);
+    this->toolBar->addSeparator();
+    this->toolBar->addAction(this->action_Settings_Settings);
 }
 
 void MainWindow::emulationThread_Init(void)
@@ -463,7 +469,7 @@ void MainWindow::emulationThread_Launch(QString cartRom, QString diskRom)
 
     if (this->emulationThread->isRunning())
     {
-        this->on_Action_File_EndEmulation();
+        this->on_Action_System_Shutdown();
 
         while (this->emulationThread->isRunning())
         {
@@ -507,23 +513,18 @@ void MainWindow::emulationThread_Launch(QString file)
 
 void MainWindow::ui_Actions_Init(void)
 {
-    this->action_File_OpenRom = new QAction(this);
-    this->action_File_OpenCombo = new QAction(this);
-    this->action_File_StartEmulation = new QAction(this);
-    this->action_File_EndEmulation = new QAction(this);
-    this->action_File_Language = new QAction(this);
     this->action_File_ChooseDirectory = new QAction(this);
     this->action_File_RefreshRomList = new QAction(this);
-    this->action_File_RecentRom = new QAction(this);
-    this->action_File_RecentRomDirectories = new QAction(this);
-    this->action_File_Exit = new QAction(this);
 
+    this->action_System_OpenRom = new QAction(this);
+    this->action_System_OpenCombo = new QAction(this);
+    this->action_System_Shutdown = new QAction(this);
+    this->menu_System_Reset = new QMenu(this);
     this->action_System_SoftReset = new QAction(this);
     this->action_System_HardReset = new QAction(this);
     this->action_System_Pause = new QAction(this);
     this->action_System_CaptureScreenshot = new QAction(this);
     this->action_System_LimitFPS = new QAction(this);
-    this->action_System_SwapDisk = new QAction(this);
     this->action_System_SaveState = new QAction(this);
     this->action_System_SaveAs = new QAction(this);
     this->action_System_LoadState = new QAction(this);
@@ -531,183 +532,212 @@ void MainWindow::ui_Actions_Init(void)
     this->menu_System_CurrentSaveState = new QMenu(this);
     this->action_System_Cheats = new QAction(this);
     this->action_System_GSButton = new QAction(this);
+    this->action_System_Exit = new QAction(this);
 
-    this->action_Options_FullScreen = new QAction(this);
-    this->action_Options_ConfigGfx = new QAction(this);
-    this->action_Options_ConfigAudio = new QAction(this);
-    this->action_Options_ConfigRsp = new QAction(this);
-    this->action_Options_ConfigControl = new QAction(this);
-    this->action_Options_Settings = new QAction(this);
+    this->action_Settings_Graphics = new QAction(this);
+    this->action_Settings_Audio = new QAction(this);
+    this->action_Settings_Rsp = new QAction(this);
+    this->action_Settings_Input = new QAction(this);
+    this->action_Settings_Settings = new QAction(this);
 
-    this->action_Help_HomePage = new QAction(this);
+    this->action_View_Fullscreen = new QAction(this);
+
+    this->action_Help_Github = new QAction(this);
     this->action_Help_About = new QAction(this);
 }
 
 void MainWindow::ui_Actions_Setup(bool inEmulation, bool isPaused)
 {
     QString keyBinding;
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_OpenROM));
-    this->action_File_OpenRom->setText("Open ROM");
-    this->action_File_OpenRom->setShortcut(QKeySequence(keyBinding));
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_OpenCombo));
-    this->action_File_OpenCombo->setText("Open Combo");
-    this->action_File_OpenCombo->setShortcut(QKeySequence(keyBinding));
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_StartEmulation));
-    this->action_File_StartEmulation->setText("Start Emulation");
-    this->action_File_StartEmulation->setShortcut(QKeySequence(keyBinding));
-    this->action_File_StartEmulation->setEnabled(!inEmulation);
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_EndEmulation));
-    this->action_File_EndEmulation->setText("End Emulation");
-    this->action_File_EndEmulation->setShortcut(QKeySequence(keyBinding));
-    this->action_File_EndEmulation->setEnabled(inEmulation);
-    this->action_File_Language->setText("Language");
+
     this->action_File_ChooseDirectory->setText("Choose ROM Directory...");
+    this->action_File_ChooseDirectory->setIcon(QIcon::fromTheme("folder-open-line"));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_RefreshROMList));
     this->action_File_RefreshRomList->setText("Refresh ROM List");
+    this->action_File_RefreshRomList->setIcon(QIcon::fromTheme("refresh-line"));
     this->action_File_RefreshRomList->setShortcut(QKeySequence(keyBinding));
-    this->action_File_RecentRom->setText("Recent ROM");
-    this->action_File_RecentRomDirectories->setText("Recent ROM Directories");
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Exit));
-    this->action_File_Exit->setText("Exit");
-    this->action_File_Exit->setShortcut(QKeySequence(keyBinding));
 
+    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_OpenROM));
+    this->action_System_OpenRom->setText("Start ROM");
+    this->action_System_OpenRom->setIcon(QIcon::fromTheme("file-line"));
+    this->action_System_OpenRom->setShortcut(QKeySequence(keyBinding));
+    this->action_System_OpenRom->setEnabled(!inEmulation);
+    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_OpenCombo));
+    this->action_System_OpenCombo->setText("Start Combo");
+    this->action_System_OpenCombo->setIcon(QIcon::fromTheme("file-line"));
+    this->action_System_OpenCombo->setShortcut(QKeySequence(keyBinding));
+    this->action_System_OpenCombo->setEnabled(!inEmulation);
+    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_EndEmulation));
+    this->action_System_Shutdown->setText("Shutdown");
+    this->action_System_Shutdown->setIcon(QIcon::fromTheme("shut-down-line"));
+    this->action_System_Shutdown->setShortcut(QKeySequence(keyBinding));
+    this->action_System_Shutdown->setEnabled(inEmulation);
+    // TODO, why doesnt this work?
+    this->menu_System_Reset->setIcon(QIcon::fromTheme("restart-line"));
+    this->menu_System_Reset->setEnabled(inEmulation);
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_SoftReset));
     this->action_System_SoftReset->setText("Soft Reset");
+    this->action_System_SoftReset->setIcon(QIcon::fromTheme("restart-line"));
+    this->action_System_SoftReset->setEnabled(inEmulation);
     this->action_System_SoftReset->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_HardReset));
     this->action_System_HardReset->setText("Hard Reset");
+    this->action_System_HardReset->setIcon(QIcon::fromTheme("restart-line"));
+    this->action_System_HardReset->setEnabled(inEmulation);
     this->action_System_HardReset->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Resume));
-    this->action_System_Pause->setText(isPaused ? "Resume" : "Pause");
+    this->action_System_Pause->setText("Pause");
+    this->action_System_Pause->setIcon(QIcon::fromTheme("pause-line"));
+    this->action_System_Pause->setCheckable(true);
+    this->action_System_Pause->setChecked(isPaused);
+    this->action_System_Pause->setEnabled(inEmulation);
     this->action_System_Pause->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_GenerateBitmap));
-    this->action_System_CaptureScreenshot->setText("Capture Screenshot");
+    this->action_System_CaptureScreenshot->setText("Screenshot");
+    this->action_System_CaptureScreenshot->setIcon(QIcon::fromTheme("screenshot-2-line"));
+    this->action_System_CaptureScreenshot->setEnabled(inEmulation);
     this->action_System_CaptureScreenshot->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_LimitFPS));
     this->action_System_LimitFPS->setText("Limit FPS");
+    this->action_System_LimitFPS->setIcon(QIcon::fromTheme("speed-line"));
+    this->action_System_LimitFPS->setEnabled(inEmulation);
     this->action_System_LimitFPS->setShortcut(QKeySequence(keyBinding));
     this->action_System_LimitFPS->setCheckable(true);
     this->action_System_LimitFPS->setChecked(CoreIsSpeedLimiterEnabled());
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_SwapDisk));
-    this->action_System_SwapDisk->setText("Swap Disk");
-    this->action_System_SwapDisk->setShortcut(QKeySequence(keyBinding));
-    this->action_System_SwapDisk->setEnabled(false);
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_SaveState));
     this->action_System_SaveState->setText("Save State");
+    this->action_System_SaveState->setIcon(QIcon::fromTheme("save-3-line"));
+    this->action_System_SaveState->setEnabled(inEmulation);
     this->action_System_SaveState->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_SaveAs));
     this->action_System_SaveAs->setText("Save As...");
+    this->action_System_SaveAs->setIcon(QIcon::fromTheme("save-3-line"));
+    this->action_System_SaveAs->setEnabled(inEmulation);
     this->action_System_SaveAs->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_LoadState));
     this->action_System_LoadState->setText("Load State");
+    this->action_System_LoadState->setIcon(QIcon::fromTheme("folder-open-line"));
+    this->action_System_LoadState->setEnabled(inEmulation);
     this->action_System_LoadState->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Load));
     this->action_System_Load->setText("Load...");
+    this->action_System_Load->setIcon(QIcon::fromTheme("folder-open-line"));
+    this->action_System_Load->setEnabled(inEmulation);
     this->action_System_Load->setShortcut(QKeySequence(keyBinding));
     this->menu_System_CurrentSaveState->setTitle("Current Save State");
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Cheats));
     this->action_System_Cheats->setText("Cheats...");
+    this->action_System_Cheats->setIcon(QIcon::fromTheme("code-box-line"));
+    this->action_System_Cheats->setEnabled(inEmulation);
     this->action_System_Cheats->setShortcut(QKeySequence(keyBinding));
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_GSButton));
     this->action_System_GSButton->setText("GS Button");
+    this->action_System_GSButton->setEnabled(inEmulation);
     this->action_System_GSButton->setShortcut(QKeySequence(keyBinding));
+    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Exit));
+    this->action_System_Exit->setText("Exit");
+    this->action_System_Exit->setIcon(QIcon::fromTheme("door-open-line"));
+    this->action_System_Exit->setShortcut(QKeySequence(keyBinding));
+
+
+    this->action_Settings_Graphics->setText("Graphics");
+    this->action_Settings_Graphics->setIcon(QIcon::fromTheme("brush-line"));
+    this->action_Settings_Graphics->setEnabled(CorePluginsHasConfig(CorePluginType::Gfx));
+    this->action_Settings_Audio->setText("Audio");
+    this->action_Settings_Audio->setIcon(QIcon::fromTheme("volume-up-line"));
+    this->action_Settings_Audio->setEnabled(CorePluginsHasConfig(CorePluginType::Audio));
+    this->action_Settings_Rsp->setText("RSP");
+    this->action_Settings_Rsp->setIcon(QIcon::fromTheme("settings-3-line"));
+    this->action_Settings_Rsp->setEnabled(CorePluginsHasConfig(CorePluginType::Rsp));
+    this->action_Settings_Input->setText("Input");
+    this->action_Settings_Input->setIcon(QIcon::fromTheme("gamepad-line"));
+    this->action_Settings_Input->setEnabled(CorePluginsHasConfig(CorePluginType::Input));
+    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Settings));
+    this->action_Settings_Settings->setText("Settings");
+    this->action_Settings_Settings->setIcon(QIcon::fromTheme("settings-3-line"));
+    this->action_Settings_Settings->setShortcut(QKeySequence(keyBinding));
 
     keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Fullscreen));
-    this->action_Options_FullScreen->setText("Fullscreen");
-    this->action_Options_FullScreen->setEnabled(inEmulation);
-    this->action_Options_FullScreen->setShortcut(QKeySequence(keyBinding));
-    this->action_Options_ConfigGfx->setText("Graphics Settings");
-    this->action_Options_ConfigGfx->setEnabled(CorePluginsHasConfig(CorePluginType::Gfx));
-    this->action_Options_ConfigAudio->setText("Audio Settings");
-    this->action_Options_ConfigAudio->setEnabled(CorePluginsHasConfig(CorePluginType::Audio));
-    this->action_Options_ConfigRsp->setText("RSP Settings");
-    this->action_Options_ConfigRsp->setEnabled(CorePluginsHasConfig(CorePluginType::Rsp));
-    this->action_Options_ConfigControl->setText("Input Settings");
-    this->action_Options_ConfigControl->setEnabled(CorePluginsHasConfig(CorePluginType::Input));
-    keyBinding = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::KeyBinding_Settings));
-    this->action_Options_Settings->setText("Settings");
-    this->action_Options_Settings->setShortcut(QKeySequence(keyBinding));
+    this->action_View_Fullscreen->setText("Fullscreen");
+    this->action_View_Fullscreen->setIcon(QIcon::fromTheme("fullscreen-line"));
+    this->action_View_Fullscreen->setEnabled(inEmulation);
+    this->action_View_Fullscreen->setShortcut(QKeySequence(keyBinding));
 
-    this->action_Help_HomePage->setText("Website");
+    this->action_Help_Github->setText("Github Repository");
     this->action_Help_About->setText("About RMG");
 }
 
 void MainWindow::ui_Actions_Add(void)
 {
-    this->addAction(this->action_File_OpenRom);
-    this->addAction(this->action_File_OpenCombo);
-    this->addAction(this->action_File_EndEmulation);
-    this->addAction(this->action_File_ChooseDirectory);
+    this->addAction(this->action_System_OpenRom);
+    this->addAction(this->action_System_OpenCombo);
+    //this->addAction(this->action_File_ChooseDirectory);
     // this->addAction(this->action_File_RefreshRomList);
-    this->addAction(this->action_File_Exit);
+    this->addAction(this->action_System_Shutdown);
     this->addAction(this->action_System_SoftReset);
     this->addAction(this->action_System_HardReset);
     this->addAction(this->action_System_Pause);
     this->addAction(this->action_System_CaptureScreenshot);
     this->addAction(this->action_System_LimitFPS);
-    this->addAction(this->action_System_SwapDisk);
     this->addAction(this->action_System_SaveState);
     this->addAction(this->action_System_SaveAs);
     this->addAction(this->action_System_LoadState);
     this->addAction(this->action_System_Load);
     this->addAction(this->action_System_Cheats);
     this->addAction(this->action_System_GSButton);
-    this->addAction(this->action_Options_FullScreen);
-    this->addAction(this->action_Options_ConfigGfx);
-    this->addAction(this->action_Options_ConfigAudio);
-    this->addAction(this->action_Options_ConfigRsp);
-    this->addAction(this->action_Options_ConfigControl);
-    this->addAction(this->action_Options_Settings);
-    this->addAction(this->action_Help_HomePage);
+    this->addAction(this->action_System_Exit);
+    this->addAction(this->action_Settings_Graphics);
+    this->addAction(this->action_Settings_Audio);
+    this->addAction(this->action_Settings_Rsp);
+    this->addAction(this->action_Settings_Input);
+    this->addAction(this->action_Settings_Settings);
+    this->addAction(this->action_View_Fullscreen);
+    this->addAction(this->action_Help_Github);
     this->addAction(this->action_Help_About);
 }
 
 void MainWindow::ui_Actions_Remove(void)
 {
-    this->removeAction(this->action_File_OpenRom);
-    this->removeAction(this->action_File_OpenCombo);
-    this->removeAction(this->action_File_EndEmulation);
+    this->removeAction(this->action_System_OpenRom);
+    this->removeAction(this->action_System_OpenCombo);
     this->removeAction(this->action_File_ChooseDirectory);
     // this->removeAction(this->action_File_RefreshRomList);
-    this->removeAction(this->action_File_Exit);
+    this->removeAction(this->action_System_Shutdown);
     this->removeAction(this->action_System_SoftReset);
     this->removeAction(this->action_System_HardReset);
     this->removeAction(this->action_System_Pause);
     this->removeAction(this->action_System_CaptureScreenshot);
     this->removeAction(this->action_System_LimitFPS);
-    this->removeAction(this->action_System_SwapDisk);
     this->removeAction(this->action_System_SaveState);
     this->removeAction(this->action_System_SaveAs);
     this->removeAction(this->action_System_LoadState);
     this->removeAction(this->action_System_Load);
     this->removeAction(this->action_System_Cheats);
     this->removeAction(this->action_System_GSButton);
-    this->removeAction(this->action_Options_FullScreen);
-    this->removeAction(this->action_Options_ConfigGfx);
-    this->removeAction(this->action_Options_ConfigAudio);
-    this->removeAction(this->action_Options_ConfigRsp);
-    this->removeAction(this->action_Options_ConfigControl);
-    this->removeAction(this->action_Options_Settings);
-    this->removeAction(this->action_Help_HomePage);
+    this->removeAction(this->action_System_Exit);
+    this->removeAction(this->action_Settings_Graphics);
+    this->removeAction(this->action_Settings_Audio);
+    this->removeAction(this->action_Settings_Rsp);
+    this->removeAction(this->action_Settings_Input);
+    this->removeAction(this->action_Settings_Settings);
+    this->removeAction(this->action_View_Fullscreen);
+    this->removeAction(this->action_Help_Github);
     this->removeAction(this->action_Help_About);
 }
 
 void MainWindow::ui_Actions_Connect(void)
 {
-    connect(this->action_File_OpenRom, &QAction::triggered, this, &MainWindow::on_Action_File_OpenRom);
-    connect(this->action_File_OpenCombo, &QAction::triggered, this, &MainWindow::on_Action_File_OpenCombo);
-    connect(this->action_File_EndEmulation, &QAction::triggered, this, &MainWindow::on_Action_File_EndEmulation);
-    connect(this->action_File_ChooseDirectory, &QAction::triggered, this, &MainWindow::on_Action_File_ChooseDirectory);
-    connect(this->action_File_RefreshRomList, &QAction::triggered, this, &MainWindow::on_Action_File_RefreshRomList);
-    connect(this->action_File_Exit, &QAction::triggered, this, &MainWindow::on_Action_File_Exit);
+    connect(this->action_System_OpenRom, &QAction::triggered, this, &MainWindow::on_Action_System_OpenRom);
+    connect(this->action_System_OpenCombo, &QAction::triggered, this, &MainWindow::on_Action_System_OpenCombo);
+    connect(this->action_System_Exit, &QAction::triggered, this, &MainWindow::on_Action_System_Exit);
 
+    connect(this->action_System_Shutdown, &QAction::triggered, this, &MainWindow::on_Action_System_Shutdown);
     connect(this->action_System_SoftReset, &QAction::triggered, this, &MainWindow::on_Action_System_SoftReset);
     connect(this->action_System_HardReset, &QAction::triggered, this, &MainWindow::on_Action_System_HardReset);
     connect(this->action_System_Pause, &QAction::triggered, this, &MainWindow::on_Action_System_Pause);
     connect(this->action_System_CaptureScreenshot, &QAction::triggered, this,
             &MainWindow::on_Action_System_GenerateBitmap);
     connect(this->action_System_LimitFPS, &QAction::triggered, this, &MainWindow::on_Action_System_LimitFPS);
-    connect(this->action_System_SwapDisk, &QAction::triggered, this, &MainWindow::on_Action_System_SwapDisk);
     connect(this->action_System_SaveState, &QAction::triggered, this, &MainWindow::on_Action_System_SaveState);
     connect(this->action_System_SaveAs, &QAction::triggered, this, &MainWindow::on_Action_System_SaveAs);
     connect(this->action_System_LoadState, &QAction::triggered, this, &MainWindow::on_Action_System_LoadState);
@@ -715,15 +745,16 @@ void MainWindow::ui_Actions_Connect(void)
     connect(this->action_System_Cheats, &QAction::triggered, this, &MainWindow::on_Action_System_Cheats);
     connect(this->action_System_GSButton, &QAction::triggered, this, &MainWindow::on_Action_System_GSButton);
 
-    connect(this->action_Options_FullScreen, &QAction::triggered, this, &MainWindow::on_Action_Options_FullScreen);
-    connect(this->action_Options_ConfigGfx, &QAction::triggered, this, &MainWindow::on_Action_Options_ConfigGfx);
-    connect(this->action_Options_ConfigAudio, &QAction::triggered, this, &MainWindow::on_Action_Options_ConfigAudio);
-    connect(this->action_Options_ConfigRsp, &QAction::triggered, this, &MainWindow::on_Action_Options_ConfigRsp);
-    connect(this->action_Options_ConfigControl, &QAction::triggered, this,
-            &MainWindow::on_Action_Options_ConfigControl);
-    connect(this->action_Options_Settings, &QAction::triggered, this, &MainWindow::on_Action_Options_Settings);
+    connect(this->action_Settings_Graphics, &QAction::triggered, this, &MainWindow::on_Action_Settings_Graphics);
+    connect(this->action_Settings_Audio, &QAction::triggered, this, &MainWindow::on_Action_Settings_Audio);
+    connect(this->action_Settings_Rsp, &QAction::triggered, this, &MainWindow::on_Action_Settings_Rsp);
+    connect(this->action_Settings_Input, &QAction::triggered, this,
+            &MainWindow::on_Action_Settings_Input);
+    connect(this->action_Settings_Settings, &QAction::triggered, this, &MainWindow::on_Action_Settings_Settings);
 
-    connect(this->action_Help_HomePage, &QAction::triggered, this, &MainWindow::on_Action_Help_HomePage);
+    connect(this->action_View_Fullscreen, &QAction::triggered, this, &MainWindow::on_Action_View_Fullscreen);
+
+    connect(this->action_Help_Github, &QAction::triggered, this, &MainWindow::on_Action_Help_Github);
     connect(this->action_Help_About, &QAction::triggered, this, &MainWindow::on_Action_Help_About);
 }
 
@@ -916,7 +947,7 @@ void MainWindow::on_networkAccessManager_Finished(QNetworkReply* reply)
 }
 #endif // UPDATER
 
-void MainWindow::on_Action_File_OpenRom(void)
+void MainWindow::on_Action_System_OpenRom(void)
 {
     bool isRunning = CoreIsEmulationRunning();
     bool isPaused = CoreIsEmulationPaused();
@@ -947,7 +978,7 @@ void MainWindow::on_Action_File_OpenRom(void)
     this->emulationThread_Launch(romFile);
 }
 
-void MainWindow::on_Action_File_OpenCombo(void)
+void MainWindow::on_Action_System_OpenCombo(void)
 {
     bool isRunning = CoreIsEmulationRunning();
     bool isPaused = CoreIsEmulationPaused();
@@ -990,7 +1021,7 @@ void MainWindow::on_Action_File_OpenCombo(void)
     this->emulationThread_Launch(cartRom, diskRom);
 }
 
-void MainWindow::on_Action_File_EndEmulation(void)
+void MainWindow::on_Action_System_Shutdown(void)
 {
     if (CoreIsEmulationPaused())
     {
@@ -1017,7 +1048,6 @@ void MainWindow::on_Action_File_ChooseDirectory(void)
     if (!dir.isEmpty())
     {
         CoreSettingsSetValue(SettingsID::RomBrowser_Directory, dir.toStdString());
-        this->ui_Widget_RomBrowser->SetDirectory(dir);
         this->ui_Widget_RomBrowser->RefreshRomList();
     }
 }
@@ -1027,7 +1057,7 @@ void MainWindow::on_Action_File_RefreshRomList(void)
     this->ui_Widget_RomBrowser->RefreshRomList();
 }
 
-void MainWindow::on_Action_File_Exit(void)
+void MainWindow::on_Action_System_Exit(void)
 {
     this->close();
 }
@@ -1069,10 +1099,10 @@ void MainWindow::on_Action_System_Pause(void)
     if (!ret)
     {
         this->ui_MessageBox("Error", error, QString::fromStdString(CoreGetError()));
-        return;
     }
 
-    this->menuBar_Setup(true, !isPaused);
+    this->menuBar_Setup(true, (!isPaused && ret));
+    this->toolBar_Setup(true, (!isPaused && ret));
     this->ui_ManuallyPaused = true;
 }
 
@@ -1096,10 +1126,6 @@ void MainWindow::on_Action_System_LimitFPS(void)
     {
         this->ui_MessageBox("Error", "CoreSetSpeedLimiterState() Failed!", QString::fromStdString(CoreGetError()));
     }
-}
-
-void MainWindow::on_Action_System_SwapDisk(void)
-{
 }
 
 void MainWindow::on_Action_System_SaveState(void)
@@ -1208,35 +1234,27 @@ void MainWindow::on_Action_System_GSButton(void)
     }
 }
 
-void MainWindow::on_Action_Options_FullScreen(void)
-{
-    if (!CoreToggleFullscreen())
-    {
-        this->ui_MessageBox("Error", "CoreToggleFullscreen() Failed", QString::fromStdString(CoreGetError()));
-    }
-}
-
-void MainWindow::on_Action_Options_ConfigGfx(void)
+void MainWindow::on_Action_Settings_Graphics(void)
 {
     CorePluginsOpenConfig(CorePluginType::Gfx);
 }
 
-void MainWindow::on_Action_Options_ConfigAudio(void)
+void MainWindow::on_Action_Settings_Audio(void)
 {
     CorePluginsOpenConfig(CorePluginType::Audio);
 }
 
-void MainWindow::on_Action_Options_ConfigRsp(void)
+void MainWindow::on_Action_Settings_Rsp(void)
 {
     CorePluginsOpenConfig(CorePluginType::Rsp);
 }
 
-void MainWindow::on_Action_Options_ConfigControl(void)
+void MainWindow::on_Action_Settings_Input(void)
 {
     CorePluginsOpenConfig(CorePluginType::Input);
 }
 
-void MainWindow::on_Action_Options_Settings(void)
+void MainWindow::on_Action_Settings_Settings(void)
 {
     bool isRunning = CoreIsEmulationRunning();
     bool isPaused = CoreIsEmulationPaused();
@@ -1260,7 +1278,15 @@ void MainWindow::on_Action_Options_Settings(void)
     }
 }
 
-void MainWindow::on_Action_Help_HomePage(void)
+void MainWindow::on_Action_View_Fullscreen(void)
+{
+    if (!CoreToggleFullscreen())
+    {
+        this->ui_MessageBox("Error", "CoreToggleFullscreen() Failed", QString::fromStdString(CoreGetError()));
+    }
+}
+
+void MainWindow::on_Action_Help_Github(void)
 {
     QDesktopServices::openUrl(QUrl("https://github.com/Rosalie241/RMG"));
 }
@@ -1443,6 +1469,11 @@ void MainWindow::on_VidExt_SetWindowedModeWithRate(int width, int height, int re
         this->menuBar->show();
     }
 
+    if (this->toolBar->isHidden())
+    {
+        this->toolBar->show();
+    }
+
     if (this->statusBar()->isHidden())
     {
         this->statusBar()->show();
@@ -1476,6 +1507,11 @@ void MainWindow::on_VidExt_SetFullscreenModeWithRate(int width, int height, int 
         this->menuBar->hide();
     }
 
+    if (!this->toolBar->isHidden())
+    {
+        this->toolBar->hide();
+    }
+
     if (!this->statusBar()->isHidden())
     {
         this->statusBar()->hide();
@@ -1499,6 +1535,11 @@ void MainWindow::on_VidExt_ResizeWindow(int width, int height)
     if (!this->menuBar->isHidden())
     {
         height += this->menuBar->height();
+    }
+
+    if (!this->toolBar->isHidden())
+    {
+        height += this->toolBar->height();
     }
 
     if (!this->statusBar()->isHidden())
@@ -1551,6 +1592,11 @@ void MainWindow::on_VidExt_ToggleFS(bool fullscreen)
             this->menuBar->hide();
         }
 
+        if (!this->toolBar->isHidden())
+        {
+            this->toolBar->hide();
+        }
+
         if (!this->statusBar()->isHidden())
         {
             this->statusBar()->hide();
@@ -1573,6 +1619,11 @@ void MainWindow::on_VidExt_ToggleFS(bool fullscreen)
         if (this->menuBar->isHidden())
         {
             this->menuBar->show();
+        }
+        
+        if (this->toolBar->isHidden())
+        {
+            this->toolBar->show();
         }
 
         if (this->statusBar()->isHidden())

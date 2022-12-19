@@ -22,6 +22,8 @@ pkg_check_modules(SDL2 REQUIRED sdl2)
 set(RMG_SOURCES
     UserInterface/MainWindow.cpp
     UserInterface/Widget/RomBrowserWidget.cpp
+    UserInterface/Widget/RomBrowserListViewWidget.cpp
+    UserInterface/Widget/RomBrowserGridViewWidget.cpp
     UserInterface/Widget/OGLWidget.cpp
     UserInterface/Widget/KeybindButton.cpp
     UserInterface/Dialog/SettingsDialog.cpp
