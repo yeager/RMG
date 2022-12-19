@@ -205,6 +205,10 @@ void MainWindow::configureTheme(QApplication* app)
     // fallback for icons we don't provide (i.e standard system icons)
     QIcon::setFallbackThemeName(fallbackThemeName);
 #else // _WIN32
+    
+    // set icon theme
+    QIcon::setThemeName(QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_IconTheme)));
+
     QString styleFilePath = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_Style));
     QFile styleFile(styleFilePath);
 
@@ -221,9 +225,6 @@ void MainWindow::configureTheme(QApplication* app)
     }
 
     app->setStyleSheet(styleFile.readAll());
-
-    // set icon theme
-    QIcon::setThemeName(QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_IconTheme)));
 #endif // _WIN32
 }
 
