@@ -95,6 +95,7 @@ class SettingsDialog : public QDialog, private Ui::SettingsDialog
     void commonPluginSettings(int);
     void commonInterfaceStyleSettings(int);
 
+    void setIconsForEmulationInfoText(void);
     void hideEmulationInfoText(void);
 
     void chooseDirectory(QLineEdit *);

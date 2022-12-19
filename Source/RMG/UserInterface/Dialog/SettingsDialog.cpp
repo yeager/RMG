@@ -15,12 +15,15 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDirIterator>
+#include <QLabel>
 
 using namespace UserInterface::Dialog;
 
 SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent)
 {
     this->setupUi(this);
+
+    this->setIconsForEmulationInfoText();
 
     this->romOpened = CoreHasRomOpen();
     if (romOpened)
@@ -863,6 +866,23 @@ void SettingsDialog::commonInterfaceStyleSettings(int action)
     {
         this->styleComboBox->addItem("", "");
         this->styleComboBox->setCurrentText("");
+    }
+}
+
+void SettingsDialog::setIconsForEmulationInfoText(void)
+{
+    QLabel* labels[] = {
+        this->infoIconLabel_0, this->infoIconLabel_1, this->infoIconLabel_2,
+        this->infoIconLabel_3, this->infoIconLabel_4, this->infoIconLabel_5,
+        this->infoIconLabel_6, this->infoIconLabel_7
+    };
+
+    QIcon infoIcon = QIcon::fromTheme("information-line");
+    QPixmap infoIconPixmap = infoIcon.pixmap(16, 16);
+
+    for (QLabel* label : labels)
+    {
+        label->setPixmap(infoIconPixmap);
     }
 }
 

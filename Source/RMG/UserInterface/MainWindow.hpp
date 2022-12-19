@@ -34,9 +34,11 @@
 #include <QJsonObject>
 #endif // UPDATER
 
+#include "ui_MainWindow.h"
+
 namespace UserInterface
 {
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, private Ui::MainWindow
 {
     Q_OBJECT
 
@@ -48,8 +50,6 @@ class MainWindow : public QMainWindow
     void OpenROM(QString, QString, bool);
 
   private:
-    QIcon ui_Icon;
-
     Thread::EmulationThread *emulationThread;
 
     CoreCallbacks* coreCallBacks;
@@ -60,97 +60,57 @@ class MainWindow : public QMainWindow
     EventFilter *ui_EventFilter;
     QLabel *ui_StatusBar_Label;
 
-    QMenuBar *menuBar;
-    QMenu *menuBar_Menu;
-
-    QAction *action_File_ChooseDirectory;
-    QAction *action_File_RefreshRomList;
-
-    QAction *action_System_OpenRom;
-    QAction *action_System_OpenCombo;
-    QAction *action_System_Shutdown;
-    QMenu *menu_System_Reset;
-    QAction *action_System_SoftReset;
-    QAction *action_System_HardReset;
-    QAction *action_System_Pause;
-    QAction *action_System_CaptureScreenshot;
-    QAction *action_System_LimitFPS;
-    QAction *action_System_SaveState;
-    QAction *action_System_SaveAs;
-    QAction *action_System_LoadState;
-    QAction *action_System_Load;
-    QMenu *menu_System_CurrentSaveState;
-    QAction *action_System_Cheats;
-    QAction *action_System_GSButton;
-    QAction *action_System_Exit;
-
-    QAction *action_Settings_Graphics;
-    QAction *action_Settings_Audio;
-    QAction *action_Settings_Rsp;
-    QAction *action_Settings_Input;
-    QAction *action_Settings_Settings;
-
-    QAction *action_View_Fullscreen;
-
-    QAction *action_Help_Github;
-    QAction *action_Help_About;
-
-    QToolBar *toolBar;
-
     QByteArray ui_Geometry;
     bool ui_Geometry_Saved = false;
 
     QByteArray ui_VidExt_Geometry;
-    bool ui_VidExt_Geometry_Saved;
+    bool ui_VidExt_Geometry_Saved = false;
 
-    bool ui_AllowManualResizing;
-    bool ui_HideCursorInEmulation;
-    bool ui_HideCursorInFullscreenEmulation;
+    bool ui_AllowManualResizing   = false;
+    bool ui_HideCursorInEmulation = false;
+    bool ui_HideCursorInFullscreenEmulation = false;
     bool ui_NoSwitchToRomBrowser = false;
-    bool ui_VidExtForceSetMode;
-    bool ui_LaunchInFullscreen = false;
+    bool ui_VidExtForceSetMode   = false;
+    bool ui_LaunchInFullscreen   = false;
     bool ui_RefreshRomListAfterEmulation = false;
 
     bool ui_ManuallyPaused = true;
 
-    int ui_TimerId = 0;
+    int ui_TimerId      = 0;
     int ui_TimerTimeout = 0;
 
     int ui_FullscreenTimerId = 0;
-
     int ui_GamesharkButtonTimerId = 0;
 
     QString ui_WindowTitle;
 
     void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
-    void ui_Init();
-    void ui_Setup(QApplication*);
-    void ui_Stylesheet_Setup(QApplication*);
-    void ui_MessageBox(QString, QString, QString);
-    void ui_InEmulation(bool, bool);
-    void ui_SaveGeometry(void);
-    void ui_LoadGeometry(void);
+    void initializeUI();
+    
+    void configureUI(QApplication*);
+    void configureTheme(QApplication*);
 
-    void menuBar_Init(void);
-    void menuBar_Setup(bool, bool);
+    void showMessageBox(QString, QString, QString);
+    
+    void updateUI(bool, bool);
 
-    void toolBar_Init(void);
-    void toolBar_Setup(bool, bool);
+    void storeGeometry(void);
+    void loadGeometry(void);
 
-    void emulationThread_Init(void);
-    void emulationThread_Connect(void);
-    void emulationThread_Launch(QString, QString);
-    void emulationThread_Launch(QString);
+    void initializeEmulationThread(void);
+    void connectEmulationThreadSignals(void);
+    void launchEmulationThread(QString, QString);
+    void launchEmulationThread(QString);
 
-    void ui_Actions_Init(void);
-    void ui_Actions_Setup(bool, bool);
-    void ui_Actions_Add(void);
-    void ui_Actions_Remove(void);
-    void ui_Actions_Connect(void);
+    void connectActionSignals(void);
+    void updateActions(bool, bool);
+
+    void addFullscreenActions(void);
+    void removeFullscreenActions(void);
 
 #ifdef UPDATER
-    void ui_CheckForUpdates(void);
+    void checkForUpdates(void);
 #endif // UPDATER
   protected:
     void timerEvent(QTimerEvent *) Q_DECL_OVERRIDE;

@@ -10,7 +10,10 @@
   <file alias="icons/black/svg/file-line.svg">Resource/icons/black/svg/file-line.svg</file>
   <file alias="icons/black/svg/folder-open-line.svg">Resource/icons/black/svg/folder-open-line.svg</file>
   <file alias="icons/black/svg/fullscreen-line.svg">Resource/icons/black/svg/fullscreen-line.svg</file>
+  <file alias="icons/black/svg/function-line.svg">Resource/icons/black/svg/function-line.svg</file>
   <file alias="icons/black/svg/gamepad-line.svg">Resource/icons/black/svg/gamepad-line.svg</file>
+  <file alias="icons/black/svg/information-line.svg">Resource/icons/black/svg/information-line.svg</file>
+  <file alias="icons/black/svg/list-check.svg">Resource/icons/black/svg/list-check.svg</file>
   <file alias="icons/black/svg/pause-line.svg">Resource/icons/black/svg/pause-line.svg</file>
   <file alias="icons/black/svg/play-line.svg">Resource/icons/black/svg/play-line.svg</file>
   <file alias="icons/black/svg/refresh-line.svg">Resource/icons/black/svg/refresh-line.svg</file>
@@ -29,7 +32,10 @@
   <file alias="icons/white/svg/file-line.svg">Resource/icons/white/svg/file-line.svg</file>
   <file alias="icons/white/svg/folder-open-line.svg">Resource/icons/white/svg/folder-open-line.svg</file>
   <file alias="icons/white/svg/fullscreen-line.svg">Resource/icons/white/svg/fullscreen-line.svg</file>
+  <file alias="icons/white/svg/function-line.svg">Resource/icons/white/svg/function-line.svg</file>
   <file alias="icons/white/svg/gamepad-line.svg">Resource/icons/white/svg/gamepad-line.svg</file>
+  <file alias="icons/white/svg/information-line.svg">Resource/icons/white/svg/information-line.svg</file>
+  <file alias="icons/white/svg/list-check.svg">Resource/icons/white/svg/list-check.svg</file>
   <file alias="icons/white/svg/pause-line.svg">Resource/icons/white/svg/pause-line.svg</file>
   <file alias="icons/white/svg/play-line.svg">Resource/icons/white/svg/play-line.svg</file>
   <file alias="icons/white/svg/refresh-line.svg">Resource/icons/white/svg/refresh-line.svg</file>

@@ -98,9 +98,15 @@ void RomBrowserWidget::RefreshRomList(void)
     this->coversDirectory = QString::fromStdString(CoreGetUserDataDirectory().string());
     this->coversDirectory += "/Covers";
 
+    QString directory = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::RomBrowser_Directory));
+    if (directory.isEmpty())
+    {
+        return;
+    }
+
     this->romSearcherThread->SetMaximumFiles(CoreSettingsGetIntValue(SettingsID::RomBrowser_MaxItems));
     this->romSearcherThread->SetRecursive(CoreSettingsGetBoolValue(SettingsID::RomBrowser_Recursive));
-    this->romSearcherThread->SetDirectory(QString::fromStdString(CoreSettingsGetStringValue(SettingsID::RomBrowser_Directory)));
+    this->romSearcherThread->SetDirectory(directory);
     this->romSearcherThread->start();
 }
 
