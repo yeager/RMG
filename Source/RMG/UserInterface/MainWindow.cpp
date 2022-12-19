@@ -223,7 +223,7 @@ void MainWindow::configureTheme(QApplication* app)
     app->setStyleSheet(styleFile.readAll());
 
     // set icon theme
-    QIcon::setThemeName(CoreSettingsGetStringValue(SettingsID::GUI_IconTheme));
+    QIcon::setThemeName(QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_IconTheme)));
 #endif // _WIN32
 }
 
