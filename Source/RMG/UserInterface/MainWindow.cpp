@@ -197,9 +197,13 @@ void MainWindow::configureTheme(QApplication* app)
     this->setStyleSheet(fallbackStyleSheet);
 
     // set icon theme
+    QString fallbackThemeName = QIcon::themeName();
     QPalette palette = app->palette();
     bool dark = palette.windowText().color().value() > palette.window().color().value();
     QIcon::setThemeName(dark ? "white" : "black");
+
+    // fallback for icons we don't provide (i.e standard system icons)
+    QIcon::setFallbackThemeName(fallbackThemeName);
 #else // _WIN32
     QString styleFilePath = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::GUI_Style));
     QFile styleFile(styleFilePath);
