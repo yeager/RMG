@@ -15,6 +15,7 @@
 
 #include "RomBrowserListViewWidget.hpp"
 #include "RomBrowserGridViewWidget.hpp"
+#include "RomBrowserLoadingWidget.hpp"
 
 #include <QHeaderView>
 #include <QList>
@@ -47,22 +48,51 @@ class RomBrowserWidget : public QStackedWidget
     void ShowGrid(void);
 
   private:
+    Widget::RomBrowserLoadingWidget*  loadingWidget  = nullptr;
+
     Widget::RomBrowserListViewWidget* listViewWidget = nullptr;
     QStandardItemModel* listViewModel                = nullptr;
     Widget::RomBrowserGridViewWidget* gridViewWidget = nullptr;
     QStandardItemModel* gridViewModel                = nullptr;
 
+    QWidget* currentViewWidget = nullptr;
+
+    QElapsedTimer romSearcherTimer;
     Thread::RomSearcherThread* romSearcherThread = nullptr;
+
+    QMenu*   contextMenu;
+    QAction* action_PlayGame;
+    QAction* action_PlayGameWithDisk;
+    QAction* action_RefreshRomList;
+    QAction* action_ChooseRomDirectory;
+    QAction* action_RomInformation;
+    QAction* action_EditGameSettings;
+    QAction* action_EditCheats;
 
     QString coversDirectory;
 
+    QString getCurrentRom(void);
+
+  protected:
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
+
   private slots:
     void on_DoubleClicked(const QModelIndex& index);
+    void customContextMenuRequested(QPoint point);
 
     void on_ZoomIn(void);
     void on_ZoomOut(void);
 
     void on_RomBrowserThread_RomFound(QString file, CoreRomHeader header, CoreRomSettings settings);
+    void on_RomBrowserThread_Finished(bool canceled);
+
+    void on_Action_PlayGame(void);
+    void on_Action_PlayGameWithDisk(void);
+    void on_Action_RefreshRomList(void);
+    void on_Action_ChooseRomDirectory(void);
+    void on_Action_RomInformation(void);
+    void on_Action_EditGameSettings(void);
+    void on_Action_EditCheats(void);
 
   signals:
     void PlayGame(QString);

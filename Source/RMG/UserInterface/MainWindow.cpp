@@ -258,20 +258,14 @@ void MainWindow::updateUI(bool inEmulation, bool isPaused)
 
         this->ui_Widgets->setCurrentIndex(1);
         this->storeGeometry();
-        if (this->ui_ShowStatusbar)
-        {
-            this->statusBar()->setHidden(false);
-        }
+        this->statusBar()->setVisible(this->ui_ShowStatusbar);
     }
     else if (!this->ui_NoSwitchToRomBrowser)
     {
         this->setWindowTitle(this->ui_WindowTitle);
         this->ui_Widgets->setCurrentIndex(0);
         this->loadGeometry();
-        if (this->ui_ShowStatusbar)
-        {
-            this->statusBar()->setHidden(true);
-        }
+        this->statusBar()->setVisible(this->ui_ShowStatusbar);
     }
     else
     {

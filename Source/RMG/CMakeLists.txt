@@ -25,6 +25,7 @@ set(RMG_SOURCES
     UserInterface/Widget/RomBrowserWidget.cpp
     UserInterface/Widget/RomBrowserListViewWidget.cpp
     UserInterface/Widget/RomBrowserGridViewWidget.cpp
+    UserInterface/Widget/RomBrowserLoadingWidget.cpp
     UserInterface/Widget/OGLWidget.cpp
     UserInterface/Widget/KeybindButton.cpp
     UserInterface/Dialog/SettingsDialog.cpp

@@ -41,7 +41,12 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
 {
     // configure rom searcher thread
     this->romSearcherThread = new Thread::RomSearcherThread(this);
-    connect(this->romSearcherThread, &Thread::RomSearcherThread::RomFound, this,&RomBrowserWidget::on_RomBrowserThread_RomFound);
+    connect(this->romSearcherThread, &Thread::RomSearcherThread::RomFound, this, &RomBrowserWidget::on_RomBrowserThread_RomFound);
+    connect(this->romSearcherThread, &Thread::RomSearcherThread::Finished, this, &RomBrowserWidget::on_RomBrowserThread_Finished);
+
+    // configure loading widget
+    this->loadingWidget = new Widget::RomBrowserLoadingWidget(this);
+    this->addWidget(this->loadingWidget);
 
     // configure list view widget
     this->listViewWidget = new Widget::RomBrowserListViewWidget(this);
@@ -58,11 +63,13 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     this->listViewWidget->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     this->listViewWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     this->listViewWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-    this->listViewWidget->horizontalHeader()->setStretchLastSection(true); // TODO: remove?
+    this->listViewWidget->horizontalHeader()->setStretchLastSection(true);
     this->listViewWidget->horizontalHeader()->setSortIndicatorShown(false);
     this->listViewWidget->horizontalHeader()->setHighlightSections(false);
+    this->listViewWidget->horizontalHeader()->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     this->addWidget(this->listViewWidget);
     connect(this->listViewWidget, &QTableView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
+    connect(this->listViewWidget, &QTableView::customContextMenuRequested, this, &RomBrowserListViewWidget::customContextMenuRequested);
     connect(this->listViewWidget, &Widget::RomBrowserListViewWidget::ZoomIn, this, &RomBrowserWidget::on_ZoomIn);
     connect(this->listViewWidget, &Widget::RomBrowserListViewWidget::ZoomOut, this, &RomBrowserWidget::on_ZoomOut);
 
@@ -77,13 +84,54 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     this->gridViewWidget->setTextElideMode(Qt::ElideNone);    
     this->gridViewWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     this->gridViewWidget->setWordWrap(true);
+    this->gridViewWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     this->gridViewWidget->setIconSize(QSize(180, 126)); // TODO: load this from settings
     this->addWidget(this->gridViewWidget);
-    connect(this->gridViewWidget, &QTableView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
+    connect(this->gridViewWidget, &QListView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
+    connect(this->gridViewWidget, &QListView::customContextMenuRequested, this, &RomBrowserListViewWidget::customContextMenuRequested);
     connect(this->gridViewWidget, &Widget::RomBrowserGridViewWidget::ZoomIn, this, &RomBrowserWidget::on_ZoomIn);
     connect(this->gridViewWidget, &Widget::RomBrowserGridViewWidget::ZoomOut, this, &RomBrowserWidget::on_ZoomOut);
 
-    this->setCurrentWidget(this->gridViewWidget);
+    // configure context menu policy
+    this->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    connect(this, &QStackedWidget::customContextMenuRequested, this, &RomBrowserWidget::customContextMenuRequested);
+
+    // configure context menu actions
+    this->action_PlayGame = new QAction(this);
+    this->action_PlayGameWithDisk = new QAction(this);
+    this->action_RefreshRomList = new QAction(this);
+    this->action_ChooseRomDirectory = new QAction(this);
+    this->action_RomInformation = new QAction(this);
+    this->action_EditGameSettings = new QAction(this);
+    this->action_EditCheats = new QAction(this);
+    this->action_PlayGame->setText("Play Game");
+    this->action_PlayGameWithDisk->setText("Play Game with Disk");
+    this->action_RefreshRomList->setText("Refresh ROM List");
+    this->action_ChooseRomDirectory->setText("Choose ROM Directory...");
+    this->action_RomInformation->setText("ROM Information");
+    this->action_EditGameSettings->setText("Edit Game Settings");
+    this->action_EditCheats->setText("Edit Cheats");
+    connect(this->action_PlayGame, &QAction::triggered, this, &RomBrowserWidget::on_Action_PlayGame);
+    connect(this->action_PlayGameWithDisk, &QAction::triggered, this, &RomBrowserWidget::on_Action_PlayGameWithDisk);
+    connect(this->action_RefreshRomList, &QAction::triggered, this, &RomBrowserWidget::on_Action_RefreshRomList);
+    connect(this->action_ChooseRomDirectory, &QAction::triggered, this,
+            &RomBrowserWidget::on_Action_ChooseRomDirectory);
+    connect(this->action_RomInformation, &QAction::triggered, this, &RomBrowserWidget::on_Action_RomInformation);
+    connect(this->action_EditGameSettings, &QAction::triggered, this, &RomBrowserWidget::on_Action_EditGameSettings);
+    connect(this->action_EditCheats, &QAction::triggered, this, &RomBrowserWidget::on_Action_EditCheats);
+
+    // configure context menu
+    this->contextMenu = new QMenu(this);
+    this->contextMenu->addAction(this->action_PlayGame);
+    this->contextMenu->addAction(this->action_PlayGameWithDisk);
+    this->contextMenu->addSeparator();
+    this->contextMenu->addAction(this->action_RefreshRomList);
+    this->contextMenu->addAction(this->action_ChooseRomDirectory);
+    this->contextMenu->addSeparator();
+    this->contextMenu->addAction(this->action_RomInformation);
+    this->contextMenu->addSeparator();
+    this->contextMenu->addAction(this->action_EditGameSettings);
+    this->contextMenu->addAction(this->action_EditCheats);
 }
 
 RomBrowserWidget::~RomBrowserWidget()
@@ -108,6 +156,9 @@ void RomBrowserWidget::RefreshRomList(void)
     this->romSearcherThread->SetRecursive(CoreSettingsGetBoolValue(SettingsID::RomBrowser_Recursive));
     this->romSearcherThread->SetDirectory(directory);
     this->romSearcherThread->start();
+
+    this->setCurrentWidget(this->loadingWidget);
+    this->romSearcherTimer.start();
 }
 
 bool RomBrowserWidget::IsRefreshingRomList(void)
@@ -122,24 +173,56 @@ void RomBrowserWidget::StopRefreshRomList(void)
 
 void RomBrowserWidget::ShowList(void)
 {
-    this->setCurrentWidget(this->listViewWidget);
+    this->currentViewWidget = this->listViewWidget;
+
+    // only change widget now when we're not refreshing
+    if (!this->IsRefreshingRomList())
+    {
+        this->setCurrentWidget(this->listViewWidget);        
+    }
 }
 
 void RomBrowserWidget::ShowGrid(void)
 {
-    this->setCurrentWidget(this->gridViewWidget);
+    this->currentViewWidget = this->gridViewWidget;
+
+    // only change widget now when we're not refreshing
+    if (!this->IsRefreshingRomList())
+    {
+        this->setCurrentWidget(this->gridViewWidget);        
+    }
+}
+
+QString RomBrowserWidget::getCurrentRom(void)
+{
+    QStandardItemModel* model = this->listViewModel;
+    QAbstractItemView*  view  = this->listViewWidget;
+    if (this->currentWidget() == this->gridViewWidget)
+    {
+        model = this->gridViewModel;
+        view  = this->gridViewWidget;
+    }
+
+    QModelIndex index = view->currentIndex();
+    return model->itemData(index).last().toString();
+}
+
+void RomBrowserWidget::timerEvent(QTimerEvent* event)
+{
+    this->killTimer(event->timerId());
+    this->setCurrentWidget(this->currentViewWidget);
 }
 
 void RomBrowserWidget::on_DoubleClicked(const QModelIndex& index)
 {
-    QStandardItemModel* model = model = this->listViewModel;;
-    if (this->currentWidget() == this->gridViewWidget)
-    {
-        model = this->gridViewModel;
-    }
+    emit this->PlayGame(this->getCurrentRom());
+}
 
-    QString rom = model->itemData(index).last().toString();
-    emit this->PlayGame(rom);
+#include <iostream>
+void RomBrowserWidget::customContextMenuRequested(QPoint position)
+{
+    std::cout << "customContextMenuRequested" << std::endl;
+    this->contextMenu->popup(this->mapToGlobal(position));
 }
 
 void RomBrowserWidget::on_ZoomIn(void)
@@ -200,4 +283,53 @@ void RomBrowserWidget::on_RomBrowserThread_RomFound(QString file, CoreRomHeader 
 
     this->gridViewModel->appendRow(gridViewItem);
     this->gridViewModel->sort(0, Qt::AscendingOrder);
+}
+
+void RomBrowserWidget::on_RomBrowserThread_Finished(bool canceled)
+{
+    // prevent flicker by forcing the loading screen
+    // to be shown at least 500ms
+    qint64 elapsedTime = this->romSearcherTimer.elapsed();
+    if (elapsedTime < 500)
+    {
+        this->startTimer(500 - elapsedTime);
+        return;
+    }
+
+    this->setCurrentWidget(this->currentViewWidget);
+}
+
+void RomBrowserWidget::on_Action_PlayGame(void)
+{
+    emit this->PlayGame(this->getCurrentRom());
+}
+
+void RomBrowserWidget::on_Action_PlayGameWithDisk(void)
+{
+    emit this->PlayGameWithDisk(this->getCurrentRom());
+}
+
+void RomBrowserWidget::on_Action_RefreshRomList(void)
+{
+    this->RefreshRomList();
+}
+
+void RomBrowserWidget::on_Action_ChooseRomDirectory(void)
+{
+    emit this->ChooseRomDirectory();
+}
+
+void RomBrowserWidget::on_Action_RomInformation(void)
+{
+    emit this->RomInformation(this->getCurrentRom());
+}
+
+void RomBrowserWidget::on_Action_EditGameSettings(void)
+{
+    emit this->EditGameSettings(this->getCurrentRom());
+}
+
+void RomBrowserWidget::on_Action_EditCheats(void)
+{
+    emit this->Cheats(this->getCurrentRom());
 }

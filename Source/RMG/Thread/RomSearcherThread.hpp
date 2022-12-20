@@ -42,6 +42,7 @@ class RomSearcherThread : public QThread
 
   signals:
     void RomFound(QString file, CoreRomHeader header, CoreRomSettings settings);
+    void Finished(bool canceled);
 };
 } // namespace Thread
 

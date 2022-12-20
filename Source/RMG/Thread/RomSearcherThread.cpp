@@ -12,6 +12,7 @@
 
 #include <QDir>
 #include <QDirIterator>
+#include <QElapsedTimer>
 
 using namespace Thread;
 
@@ -79,9 +80,19 @@ void RomSearcherThread::searchDirectory(QString directory)
     bool            ret;
     int             count = 0;
 
+    QStringList romFiles;
+
     while (romDirIt.hasNext())
     {
-        QString file = romDirIt.next();
+        romFiles.push_back(romDirIt.next());
+    }
+
+    romFiles.sort();
+
+    for (QString& file : romFiles)
+    {
+        QElapsedTimer timer;
+        timer.start();
 
         if (CoreHasRomHeaderAndSettingsCached(file.toStdU32String()))
         { // found cache entry
@@ -112,12 +123,19 @@ void RomSearcherThread::searchDirectory(QString directory)
             emit this->RomFound(file, header, settings);
         }
 
-        QThread::msleep(10);
-
         if (this->stop)
         {
             break;
         }
+
+        // ensure the UI thread has some breathing room
+        // instead of being locked up and unable to render anything
+        if (timer.elapsed() < 10)
+        {
+            QThread::msleep(10 - timer.elapsed());
+        }
     }
+
+    emit this->Finished(this->stop);
 }
 
