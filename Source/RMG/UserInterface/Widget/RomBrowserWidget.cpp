@@ -44,6 +44,12 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     connect(this->romSearcherThread, &Thread::RomSearcherThread::RomFound, this, &RomBrowserWidget::on_RomBrowserThread_RomFound);
     connect(this->romSearcherThread, &Thread::RomSearcherThread::Finished, this, &RomBrowserWidget::on_RomBrowserThread_Finished);
 
+    // configure empty widget
+    this->emptyWidget = new Widget::RomBrowserEmptyWidget(this);
+    this->addWidget(this->emptyWidget);
+    connect(this->emptyWidget, &RomBrowserEmptyWidget::SelectRomDirectory, this, &RomBrowserWidget::on_Action_ChooseRomDirectory);
+    connect(this->emptyWidget, &RomBrowserEmptyWidget::Refresh, this, &RomBrowserWidget::on_Action_RefreshRomList);
+
     // configure loading widget
     this->loadingWidget = new Widget::RomBrowserLoadingWidget(this);
     this->addWidget(this->loadingWidget);
@@ -52,7 +58,8 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     this->listViewWidget = new Widget::RomBrowserListViewWidget(this);
     this->listViewModel  = new QStandardItemModel(this);
     this->listViewWidget->setModel(this->listViewModel);
-    this->listViewWidget->setItemDelegate(new NoFocusDelegate(this));
+    this->listViewWidget->setFrameStyle(QFrame::NoFrame);
+    //this->listViewWidget->setItemDelegate(new NoFocusDelegate(this));
     this->listViewWidget->setWordWrap(false);
     this->listViewWidget->setShowGrid(false);
     this->listViewWidget->setSortingEnabled(true);
@@ -77,15 +84,17 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     this->gridViewWidget = new Widget::RomBrowserGridViewWidget(this);
     this->gridViewModel  = new QStandardItemModel(this);
     this->gridViewWidget->setModel(this->gridViewModel);
-    this->gridViewWidget->setItemDelegate(new NoFocusDelegate(this));
     this->gridViewWidget->setFlow(QListView::Flow::LeftToRight);
     this->gridViewWidget->setResizeMode(QListView::Adjust);
+    this->gridViewWidget->setUniformItemSizes(true);
     this->gridViewWidget->setViewMode(QListView::ViewMode::IconMode);
     this->gridViewWidget->setTextElideMode(Qt::ElideNone);    
     this->gridViewWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
     this->gridViewWidget->setWordWrap(true);
     this->gridViewWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    this->gridViewWidget->setFrameStyle(QFrame::NoFrame);
     this->gridViewWidget->setIconSize(QSize(180, 126)); // TODO: load this from settings
+    //this->gridViewWidget->setSpacing(32); // TODO
     this->addWidget(this->gridViewWidget);
     connect(this->gridViewWidget, &QListView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
     connect(this->gridViewWidget, &QListView::customContextMenuRequested, this, &RomBrowserListViewWidget::customContextMenuRequested);
@@ -149,6 +158,7 @@ void RomBrowserWidget::RefreshRomList(void)
     QString directory = QString::fromStdString(CoreSettingsGetStringValue(SettingsID::RomBrowser_Directory));
     if (directory.isEmpty())
     {
+        this->setCurrentWidget(this->emptyWidget);
         return;
     }
 
@@ -176,7 +186,8 @@ void RomBrowserWidget::ShowList(void)
     this->currentViewWidget = this->listViewWidget;
 
     // only change widget now when we're not refreshing
-    if (!this->IsRefreshingRomList())
+    if (!this->IsRefreshingRomList() &&
+        this->currentWidget() != this->emptyWidget)
     {
         this->setCurrentWidget(this->listViewWidget);        
     }
@@ -187,7 +198,8 @@ void RomBrowserWidget::ShowGrid(void)
     this->currentViewWidget = this->gridViewWidget;
 
     // only change widget now when we're not refreshing
-    if (!this->IsRefreshingRomList())
+    if (!this->IsRefreshingRomList() &&
+        this->currentWidget() != this->emptyWidget)
     {
         this->setCurrentWidget(this->gridViewWidget);        
     }
@@ -222,6 +234,9 @@ void RomBrowserWidget::on_DoubleClicked(const QModelIndex& index)
 void RomBrowserWidget::customContextMenuRequested(QPoint position)
 {
     std::cout << "customContextMenuRequested" << std::endl;
+   // if (!this->gridViewWidget->selectionModel()->hasSelection())
+     //   return;
+
     this->contextMenu->popup(this->mapToGlobal(position));
 }
 
@@ -260,14 +275,39 @@ void RomBrowserWidget::on_RomBrowserThread_RomFound(QString file, CoreRomHeader 
         name = QFileInfo(file).fileName();
     }
 
-    // try to load cover
-    QString coverPath = this->coversDirectory;
-    coverPath += "/";
-    coverPath += QString::fromStdString(header.Name);
-    coverPath += ".jpg";
+    // try to load cover using
+    // 1) MD5
+    // 2) good name
+    // 3) internal name
+    bool foundCover = false;
+    for (QString name : { 
+        QString::fromStdString(settings.MD5), 
+        QString::fromStdString(settings.GoodName), 
+        QString::fromStdString(header.Name) })
+    {
+        // we support jpg & png as file extensions
+        for (QString ext : { ".jpg", ".jpeg", ".png" })
+        {
+            QString coverPath = this->coversDirectory;
+            coverPath += "/";
+            coverPath += name;
+            coverPath += ext;
 
-    if (!QFile::exists(coverPath) ||
-        !pixmap.load(coverPath))
+            if (QFile::exists(coverPath) && 
+                pixmap.load(coverPath))
+            {
+                foundCover = true;
+                break;
+            }
+        }
+
+        if (foundCover)
+        {
+            break;
+        }
+    }
+    // fallback
+    if (!foundCover)
     {
         pixmap.load(":Resource/CoverFallback.png");
     }
@@ -287,12 +327,22 @@ void RomBrowserWidget::on_RomBrowserThread_RomFound(QString file, CoreRomHeader 
 
 void RomBrowserWidget::on_RomBrowserThread_Finished(bool canceled)
 {
-    // prevent flicker by forcing the loading screen
-    // to be shown at least 500ms
-    qint64 elapsedTime = this->romSearcherTimer.elapsed();
-    if (elapsedTime < 500)
+    if (!canceled)
     {
-        this->startTimer(500 - elapsedTime);
+        if (this->listViewModel->rowCount() == 0)
+        {
+            this->setCurrentWidget(this->emptyWidget);
+            return;
+        }
+    }
+
+    // prevent flicker by forcing the loading screen
+    // to be shown at least 300ms
+    qint64 elapsedTime = this->romSearcherTimer.elapsed();
+    if (elapsedTime < 300)
+    {
+        std::cout << "artifical delayy" << std::endl;
+        this->startTimer(300 - elapsedTime);
         return;
     }
 

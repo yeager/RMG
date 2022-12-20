@@ -105,7 +105,7 @@
     <addaction name="separator"/>
     <addaction name="action_View_Fullscreen"/>
     <addaction name="separator"/>
-    <addaction name="action_View_RefreshGames"/>
+    <addaction name="action_View_RefreshRoms"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -464,13 +464,13 @@
     <string>Game Grid</string>
    </property>
   </action>
-  <action name="action_View_RefreshGames">
+  <action name="action_View_RefreshRoms">
    <property name="icon">
     <iconset theme="refresh-line">
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Refresh Games</string>
+    <string>Refresh ROMs</string>
    </property>
   </action>
  </widget>

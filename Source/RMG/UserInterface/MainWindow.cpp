@@ -462,7 +462,7 @@ void MainWindow::updateActions(bool inEmulation, bool isPaused)
     this->action_View_Fullscreen->setEnabled(inEmulation);
     this->action_View_Fullscreen->setShortcut(QKeySequence(keyBinding));
     // TODO: add keybinding
-    this->action_View_RefreshGames->setEnabled(!inEmulation);
+    this->action_View_RefreshRoms->setEnabled(!inEmulation);
 }
 
 void MainWindow::addFullscreenActions(void)
@@ -609,7 +609,7 @@ void MainWindow::connectActionSignals(void)
     connect(this->action_View_GameList, &QAction::toggled, this, &MainWindow::on_Action_View_GameList);
     connect(this->action_View_GameGrid, &QAction::toggled, this, &MainWindow::on_Action_View_GameGrid);
     connect(this->action_View_Fullscreen, &QAction::triggered, this, &MainWindow::on_Action_View_Fullscreen);
-    connect(this->action_View_RefreshGames, &QAction::triggered, this, &MainWindow::on_Action_View_RefreshGames);
+    connect(this->action_View_RefreshRoms, &QAction::triggered, this, &MainWindow::on_Action_View_RefreshRoms);
 
     connect(this->action_Help_Github, &QAction::triggered, this, &MainWindow::on_Action_Help_Github);
     connect(this->action_Help_About, &QAction::triggered, this, &MainWindow::on_Action_Help_About);
@@ -1175,7 +1175,7 @@ void MainWindow::on_Action_View_Fullscreen(void)
     }
 }
 
-void MainWindow::on_Action_View_RefreshGames(void)
+void MainWindow::on_Action_View_RefreshRoms(void)
 {
     if (!this->ui_Widget_RomBrowser->IsRefreshingRomList())
     {

@@ -16,6 +16,7 @@
 #include "RomBrowserListViewWidget.hpp"
 #include "RomBrowserGridViewWidget.hpp"
 #include "RomBrowserLoadingWidget.hpp"
+#include "RomBrowserEmptyWidget.hpp"
 
 #include <QHeaderView>
 #include <QList>
@@ -48,6 +49,7 @@ class RomBrowserWidget : public QStackedWidget
     void ShowGrid(void);
 
   private:
+    Widget::RomBrowserEmptyWidget*    emptyWidget    = nullptr;
     Widget::RomBrowserLoadingWidget*  loadingWidget  = nullptr;
 
     Widget::RomBrowserListViewWidget* listViewWidget = nullptr;

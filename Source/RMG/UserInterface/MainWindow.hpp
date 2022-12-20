@@ -161,7 +161,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     void on_Action_View_GameList(bool);
     void on_Action_View_GameGrid(bool);
     void on_Action_View_Fullscreen(void);
-    void on_Action_View_RefreshGames(void);
+    void on_Action_View_RefreshRoms(void);
 
     void on_Action_Help_Github(void);
     void on_Action_Help_About(void);
