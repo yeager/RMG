@@ -106,6 +106,8 @@
     <addaction name="action_View_Fullscreen"/>
     <addaction name="separator"/>
     <addaction name="action_View_RefreshRoms"/>
+    <addaction name="separator"/>
+    <addaction name="action_View_Log"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -471,6 +473,15 @@
    </property>
    <property name="text">
     <string>Refresh ROMs</string>
+   </property>
+  </action>
+  <action name="action_View_Log">
+    <property name="icon">
+    <iconset theme="file-list-line">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Log</string>
    </property>
   </action>
  </widget>

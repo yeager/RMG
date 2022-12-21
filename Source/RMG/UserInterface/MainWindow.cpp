@@ -610,6 +610,7 @@ void MainWindow::connectActionSignals(void)
     connect(this->action_View_GameGrid, &QAction::toggled, this, &MainWindow::on_Action_View_GameGrid);
     connect(this->action_View_Fullscreen, &QAction::triggered, this, &MainWindow::on_Action_View_Fullscreen);
     connect(this->action_View_RefreshRoms, &QAction::triggered, this, &MainWindow::on_Action_View_RefreshRoms);
+    connect(this->action_View_Log, &QAction::triggered, this, &MainWindow::on_Action_View_Log);
 
     connect(this->action_Help_Github, &QAction::triggered, this, &MainWindow::on_Action_Help_Github);
     connect(this->action_Help_About, &QAction::triggered, this, &MainWindow::on_Action_Help_About);
@@ -1183,6 +1184,11 @@ void MainWindow::on_Action_View_RefreshRoms(void)
     }
 }
 
+void MainWindow::on_Action_View_Log(void)
+{
+    this->logDialog.show();
+}
+
 void MainWindow::on_Action_Help_Github(void)
 {
     QDesktopServices::openUrl(QUrl("https://github.com/Rosalie241/RMG"));
@@ -1196,6 +1202,7 @@ void MainWindow::on_Action_Help_About(void)
 
 void MainWindow::on_Emulation_Started(void)
 {
+    this->logDialog.Clear();
 }
 
 void MainWindow::on_Emulation_Finished(bool ret)
@@ -1548,6 +1555,8 @@ void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString messag
     {
         return;
     }
+
+    this->logDialog.AddLogLine(type, message);
 
     if (!this->ui_ShowStatusbar)
     {

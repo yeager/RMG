@@ -42,6 +42,8 @@ set(RMG_SOURCES
     UserInterface/Dialog/RomInfoDialog.ui
     UserInterface/Dialog/AboutDialog.cpp
     UserInterface/Dialog/AboutDialog.ui
+    UserInterface/Dialog/LogDialog.cpp
+    UserInterface/Dialog/LogDialog.ui
     UserInterface/NoFocusDelegate.cpp
     UserInterface/EventFilter.cpp
     UserInterface/UIResources.rc

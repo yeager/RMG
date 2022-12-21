@@ -14,6 +14,7 @@
 #include "Dialog/SettingsDialog.hpp"
 #include "Dialog/CheatsDialog.hpp"
 #include "Dialog/RomInfoDialog.hpp"
+#include "Dialog/LogDialog.hpp"
 #include "EventFilter.hpp"
 #include "Widget/OGLWidget.hpp"
 #include "Widget/RomBrowserWidget.hpp"
@@ -86,6 +87,8 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     int ui_GamesharkButtonTimerId = 0;
 
     QString ui_WindowTitle;
+
+    Dialog::LogDialog logDialog;
 
     void closeEvent(QCloseEvent *) Q_DECL_OVERRIDE;
 
@@ -162,6 +165,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     void on_Action_View_GameGrid(bool);
     void on_Action_View_Fullscreen(void);
     void on_Action_View_RefreshRoms(void);
+    void on_Action_View_Log(void);
 
     void on_Action_Help_Github(void);
     void on_Action_Help_About(void);
