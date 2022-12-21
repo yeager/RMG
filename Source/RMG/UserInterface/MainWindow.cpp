@@ -88,6 +88,7 @@ bool MainWindow::Init(QApplication* app)
     }
 
     connect(coreCallBacks, &CoreCallbacks::OnCoreDebugCallback, this, &MainWindow::on_Core_DebugCallback);
+    connect(coreCallBacks, &CoreCallbacks::OnCoreDebugCallback, &this->logDialog, &Dialog::LogDialog::AddLogLine);
     connect(app, &QGuiApplication::applicationStateChanged, this, &MainWindow::on_QGuiApplication_applicationStateChanged);
 
     return true;
@@ -1556,7 +1557,7 @@ void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString messag
         return;
     }
 
-    this->logDialog.AddLogLine(type, message);
+    //this->logDialog.AddLogLine(type, message);
 
     if (!this->ui_ShowStatusbar)
     {
