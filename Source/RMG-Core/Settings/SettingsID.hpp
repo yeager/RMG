@@ -122,7 +122,11 @@ enum class SettingsID
     RomBrowser_Columns,
     RomBrowser_ColumnSizes,
     RomBrowser_ViewMode,
-
+    RomBrowser_ListViewSortSection,
+    RomBrowser_ListViewSortOrder,
+    RomBrowser_GridViewIconWidth,
+    RomBrowser_GridViewIconHeight,
+    
     // Settings Settings
     Settings_HasForceUsedSetOnce,
 

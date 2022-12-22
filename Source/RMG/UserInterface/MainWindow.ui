@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>579</width>
-    <height>547</height>
+    <width>639</width>
+    <height>543</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>579</width>
+     <width>639</width>
      <height>22</height>
     </rect>
    </property>
@@ -476,7 +476,7 @@
    </property>
   </action>
   <action name="action_View_Log">
-    <property name="icon">
+   <property name="icon">
     <iconset theme="file-list-line">
      <normaloff>.</normaloff>.</iconset>
    </property>

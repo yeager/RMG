@@ -453,6 +453,18 @@ static l_Setting get_setting(SettingsID settingId)
     case SettingsID::RomBrowser_ViewMode:
         setting = {SETTING_SECTION_ROMBROWSER, "ViewMode", 0};
         break;
+    case SettingsID::RomBrowser_ListViewSortSection:
+        setting = {SETTING_SECTION_ROMBROWSER, "ListViewSortSection", 0};
+        break;
+    case SettingsID::RomBrowser_ListViewSortOrder:
+        setting = {SETTING_SECTION_ROMBROWSER, "ListViewSortOrder", 0};
+        break;
+    case SettingsID::RomBrowser_GridViewIconWidth:
+        setting = {SETTING_SECTION_ROMBROWSER, "GridViewIconWidth", 180};
+        break;
+    case SettingsID::RomBrowser_GridViewIconHeight:
+        setting = {SETTING_SECTION_ROMBROWSER, "GridViewIconHeight", 126};
+        break;
 
     case SettingsID::Settings_HasForceUsedSetOnce:
         setting = {SETTING_SECTION_SETTINGS, "HasForceUsedSetOnce", false};

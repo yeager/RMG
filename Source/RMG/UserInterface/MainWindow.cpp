@@ -108,6 +108,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     this->coreCallBacks->Stop();
 
+    this->logDialog.close();
+
     while (this->emulationThread->isRunning())
     {
         QCoreApplication::processEvents();
@@ -1556,8 +1558,6 @@ void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString messag
     {
         return;
     }
-
-    //this->logDialog.AddLogLine(type, message);
 
     if (!this->ui_ShowStatusbar)
     {

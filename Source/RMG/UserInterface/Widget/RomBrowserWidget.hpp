@@ -62,6 +62,9 @@ class RomBrowserWidget : public QStackedWidget
     QElapsedTimer romSearcherTimer;
     Thread::RomSearcherThread* romSearcherThread = nullptr;
 
+    int listViewSortSection = 0;
+    int listViewSortOrder = 0;
+
     QMenu*   contextMenu;
     QAction* action_PlayGame;
     QAction* action_PlayGameWithDisk;
@@ -73,7 +76,12 @@ class RomBrowserWidget : public QStackedWidget
 
     QString coversDirectory;
 
+    QStandardItemModel* getCurrentModel(void);
+    QAbstractItemView*  getCurrentModelView(void);
+
     QString getCurrentRom(void);
+
+    QIcon getCurrentCover(CoreRomHeader header, CoreRomSettings settings);
 
   protected:
     void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
@@ -81,6 +89,8 @@ class RomBrowserWidget : public QStackedWidget
   private slots:
     void on_DoubleClicked(const QModelIndex& index);
     void customContextMenuRequested(QPoint point);
+
+    void on_listViewWidget_sortIndicatorChanged(int logicalIndex, Qt::SortOrder sortOrder);
 
     void on_ZoomIn(void);
     void on_ZoomOut(void);
