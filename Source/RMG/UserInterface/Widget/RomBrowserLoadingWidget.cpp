@@ -25,21 +25,38 @@ RomBrowserLoadingWidget::RomBrowserLoadingWidget(QWidget* parent) : QWidget(pare
     layout->addWidget(loadingLabel);
 
     this->setLayout(layout);
-
-    this->startTimer(1000);
 }
 
 RomBrowserLoadingWidget::~RomBrowserLoadingWidget()
 {
 }
 
+void RomBrowserLoadingWidget::SetWidgetIndex(int index)
+{
+    this->widgetIndex = index;
+}
+
+void RomBrowserLoadingWidget::on_RomBrowserWidget_currentChanged(int index)
+{
+    // start timer when it isnt running
+    // and when we've switched to our widget,
+    // else kill the timer
+    if (this->widgetIndex == index)
+    {
+        if (this->loadingLabelTimerId == -1)
+        {
+            this->loadingLabelTimerId = this->startTimer(1000);
+        }
+    }
+    else
+    {
+        this->killTimer(this->loadingLabelTimerId);
+        this->loadingLabelTimerId = -1;
+    }
+}
+
 void RomBrowserLoadingWidget::timerEvent(QTimerEvent *event)
 {
-    if (!this->isVisible())
-    {
-        return;
-    }
-
     if (this->loadingLabel->text().size() >= 10)
     {
         this->loadingLabel->setText("Loading");

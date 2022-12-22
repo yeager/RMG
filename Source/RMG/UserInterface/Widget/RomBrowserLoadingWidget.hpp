@@ -24,8 +24,15 @@ public:
     RomBrowserLoadingWidget(QWidget* parent);
     ~RomBrowserLoadingWidget();
 
+    void SetWidgetIndex(int index);
+
+public slots:
+    void on_RomBrowserWidget_currentChanged(int index);
+
 private:
     QLabel* loadingLabel;
+    int loadingLabelTimerId = -1;
+    int widgetIndex = -1;
 
 protected:
     void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;

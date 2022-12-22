@@ -41,7 +41,8 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
 
     // configure loading widget
     this->loadingWidget = new Widget::RomBrowserLoadingWidget(this);
-    this->addWidget(this->loadingWidget);
+    connect(this, &QStackedWidget::currentChanged, this->loadingWidget, &RomBrowserLoadingWidget::on_RomBrowserWidget_currentChanged);
+    this->loadingWidget->SetWidgetIndex(this->addWidget(this->loadingWidget));
 
     // configure list view widget
     this->listViewWidget = new Widget::RomBrowserListViewWidget(this);
@@ -70,7 +71,6 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     connect(this->listViewWidget, &Widget::RomBrowserListViewWidget::ZoomIn, this, &RomBrowserWidget::on_ZoomIn);
     connect(this->listViewWidget, &Widget::RomBrowserListViewWidget::ZoomOut, this, &RomBrowserWidget::on_ZoomOut);
 
-
     // TODO
     QStringList labels;
     labels << "Name";
@@ -96,7 +96,6 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     int iconWidth = CoreSettingsGetIntValue(SettingsID::RomBrowser_GridViewIconWidth);
     int iconHeight = CoreSettingsGetIntValue(SettingsID::RomBrowser_GridViewIconHeight);
     this->gridViewWidget->setIconSize(QSize(iconWidth, iconHeight));
-    //this->gridViewWidget->setSpacing(32); // TODO
     this->addWidget(this->gridViewWidget);
     connect(this->gridViewWidget, &QListView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
     connect(this->gridViewWidget, &QListView::customContextMenuRequested, this, &RomBrowserListViewWidget::customContextMenuRequested);
