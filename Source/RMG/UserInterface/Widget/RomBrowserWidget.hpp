@@ -91,6 +91,7 @@ class RomBrowserWidget : public QStackedWidget
     void customContextMenuRequested(QPoint point);
 
     void on_listViewWidget_sortIndicatorChanged(int logicalIndex, Qt::SortOrder sortOrder);
+    void on_gridViewWidget_iconSizeChanged(const QSize& size);
 
     void on_ZoomIn(void);
     void on_ZoomOut(void);

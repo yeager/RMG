@@ -100,6 +100,7 @@ RomBrowserWidget::RomBrowserWidget(QWidget *parent) : QStackedWidget(parent)
     this->addWidget(this->gridViewWidget);
     connect(this->gridViewWidget, &QListView::doubleClicked, this, &RomBrowserWidget::on_DoubleClicked);
     connect(this->gridViewWidget, &QListView::customContextMenuRequested, this, &RomBrowserListViewWidget::customContextMenuRequested);
+    connect(this->gridViewWidget, &QListView::iconSizeChanged, this, &RomBrowserWidget::on_gridViewWidget_iconSizeChanged);
     connect(this->gridViewWidget, &Widget::RomBrowserGridViewWidget::ZoomIn, this, &RomBrowserWidget::on_ZoomIn);
     connect(this->gridViewWidget, &Widget::RomBrowserGridViewWidget::ZoomOut, this, &RomBrowserWidget::on_ZoomOut);
 
@@ -167,13 +168,13 @@ void RomBrowserWidget::RefreshRomList(void)
         return;
     }
 
+    this->setCurrentWidget(this->loadingWidget);
+    this->romSearcherTimer.start();
+
     this->romSearcherThread->SetMaximumFiles(CoreSettingsGetIntValue(SettingsID::RomBrowser_MaxItems));
     this->romSearcherThread->SetRecursive(CoreSettingsGetBoolValue(SettingsID::RomBrowser_Recursive));
     this->romSearcherThread->SetDirectory(directory);
     this->romSearcherThread->start();
-
-    this->setCurrentWidget(this->loadingWidget);
-    this->romSearcherTimer.start();
 }
 
 bool RomBrowserWidget::IsRefreshingRomList(void)
@@ -316,10 +317,13 @@ void RomBrowserWidget::customContextMenuRequested(QPoint position)
         return;
     }
 
-    if (!view->selectionModel()->hasSelection())
-    {
-        return;
-    }
+    bool hasSelection = view->selectionModel()->hasSelection();
+
+    this->action_PlayGame->setEnabled(hasSelection);
+    this->action_PlayGameWithDisk->setEnabled(hasSelection);
+    this->action_RomInformation->setEnabled(hasSelection);
+    this->action_EditGameSettings->setEnabled(hasSelection);
+    this->action_EditCheats->setEnabled(hasSelection);
 
     this->contextMenu->popup(this->mapToGlobal(position));
 }
@@ -328,6 +332,12 @@ void RomBrowserWidget::on_listViewWidget_sortIndicatorChanged(int logicalIndex, 
 {
     CoreSettingsSetValue(SettingsID::RomBrowser_ListViewSortSection, logicalIndex);
     CoreSettingsSetValue(SettingsID::RomBrowser_ListViewSortOrder, (int)sortOrder);
+}
+
+void RomBrowserWidget::on_gridViewWidget_iconSizeChanged(const QSize& size)
+{
+    CoreSettingsSetValue(SettingsID::RomBrowser_GridViewIconWidth, size.width());
+    CoreSettingsSetValue(SettingsID::RomBrowser_GridViewIconHeight, size.height());
 }
 
 void RomBrowserWidget::on_ZoomIn(void)
@@ -352,7 +362,6 @@ void RomBrowserWidget::on_ZoomOut(void)
     view->setIconSize(view->iconSize() - QSize(20, 20));
 }
 
-#include <iostream>
 void RomBrowserWidget::on_RomBrowserThread_RomFound(QString file, CoreRomHeader header, CoreRomSettings settings)
 {
     QString name;
@@ -385,13 +394,10 @@ void RomBrowserWidget::on_RomBrowserThread_RomFound(QString file, CoreRomHeader 
     listViewRow.append(listViewItem3);
     this->listViewModel->appendRow(listViewRow);
 
-    std::cout << "name: " << name.toStdString() << std::endl;
-
-    QStandardItem* gridViewItem = new QStandardItem(coverIcon, name);
-    //gridViewItem->setIcon(coverIcon);
-   // gridViewItem->setText(name);
+    QStandardItem* gridViewItem = new QStandardItem();
+    gridViewItem->setIcon(coverIcon);
+    gridViewItem->setText(name);
     gridViewItem->setData(file);
-
     this->gridViewModel->appendRow(gridViewItem);
 }
 
