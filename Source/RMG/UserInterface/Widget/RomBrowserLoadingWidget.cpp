@@ -50,8 +50,11 @@ void RomBrowserLoadingWidget::on_RomBrowserWidget_currentChanged(int index)
     }
     else
     {
-        this->killTimer(this->loadingLabelTimerId);
-        this->loadingLabelTimerId = -1;
+        if (this->loadingLabelTimerId != -1)
+        {
+            this->killTimer(this->loadingLabelTimerId);
+            this->loadingLabelTimerId = -1;
+        }
     }
 }
 
