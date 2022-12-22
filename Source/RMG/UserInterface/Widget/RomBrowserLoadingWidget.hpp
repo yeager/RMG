@@ -11,6 +11,7 @@
 #define ROMBROWSERLOADINGWIDGET_HPP
 
 #include <QWidget>
+#include <QLabel>
 
 namespace UserInterface
 {
@@ -22,6 +23,12 @@ class RomBrowserLoadingWidget : public QWidget
 public:
     RomBrowserLoadingWidget(QWidget* parent);
     ~RomBrowserLoadingWidget();
+
+private:
+    QLabel* loadingLabel;
+
+protected:
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 };
 } // namespace Widget
 } // namespace UserInterface

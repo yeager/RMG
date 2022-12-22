@@ -18,15 +18,34 @@ RomBrowserLoadingWidget::RomBrowserLoadingWidget(QWidget* parent) : QWidget(pare
 {
     QHBoxLayout* layout = new QHBoxLayout(this);
 
-    QLabel* loadingLabel = new QLabel(this);
-    loadingLabel->setText("Loading...");
-    loadingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    this->loadingLabel = new QLabel(this);
+    this->loadingLabel->setText("Loading");
+    this->loadingLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
     layout->addWidget(loadingLabel);
 
     this->setLayout(layout);
+
+    this->startTimer(1000);
 }
 
 RomBrowserLoadingWidget::~RomBrowserLoadingWidget()
 {
+}
+
+void RomBrowserLoadingWidget::timerEvent(QTimerEvent *event)
+{
+    if (!this->isVisible())
+    {
+        return;
+    }
+
+    if (this->loadingLabel->text().size() >= 10)
+    {
+        this->loadingLabel->setText("Loading");
+    }
+    else
+    {
+        this->loadingLabel->setText(this->loadingLabel->text() + ".");
+    }
 }
