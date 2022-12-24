@@ -1564,6 +1564,11 @@ void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString contex
         return;
     }
 
+    if (!context.startsWith("[CORE]"))
+    {
+        return;
+    }
+
     // drop verbose messages
     if (type == CoreDebugMessageType::Verbose)
     {
