@@ -45,12 +45,12 @@ void CoreCallbacks::Stop(void)
     l_CoreCallbacks = nullptr;
 }
 
-void CoreCallbacks::coreDebugCallback(CoreDebugMessageType type, std::string message)
+void CoreCallbacks::coreDebugCallback(CoreDebugMessageType type, std::string context, std::string message)
 {
     if (l_CoreCallbacks == nullptr)
     {
         return;
     }
 
-    emit l_CoreCallbacks->OnCoreDebugCallback(type, QString::fromStdString(message));
+    emit l_CoreCallbacks->OnCoreDebugCallback(type, QString::fromStdString(context), QString::fromStdString(message));
 }

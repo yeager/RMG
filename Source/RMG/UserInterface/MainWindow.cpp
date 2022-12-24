@@ -1551,7 +1551,7 @@ void MainWindow::on_VidExt_Quit(void)
 {
 }
 
-void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString message)
+void MainWindow::on_Core_DebugCallback(CoreDebugMessageType type, QString context, QString message)
 {
     // only display in statusbar when emulation is running
     if (!this->emulationThread->isRunning())

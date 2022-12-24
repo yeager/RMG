@@ -7,7 +7,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+#define CORE_INTERNAL
 #include "Plugins.hpp"
+#include "Callback.hpp"
 #include "Directories.hpp"
 #include "Error.hpp"
 #include "Emulation.hpp"
@@ -28,6 +30,7 @@
 
 static m64p::PluginApi l_Plugins[(int)CorePluginType::Input];
 static std::string     l_PluginFiles[(int)CorePluginType::Input];
+static std::string     l_PluginContext[(int)CorePluginType::Input];
 
 //
 // Local Functions
@@ -101,6 +104,32 @@ std::string get_plugin_type_name(CorePluginType type)
     return name + " Plugin";
 }
 
+std::string get_plugin_context_name(CorePluginType type)
+{
+    std::string name;
+
+    switch (type)
+    {
+        default:
+            name = "[UNKNOWN]";
+            break;
+        case CorePluginType::Rsp:
+            name = "[RSP]   ";
+            break;
+        case CorePluginType::Gfx:
+            name = "[GFX]   ";
+            break;
+        case CorePluginType::Audio:
+            name = "[AUDIO] ";
+            break;
+        case CorePluginType::Input:
+            name = "[INPUT] ";
+            break;
+    }
+
+    return name;
+}
+
 bool apply_plugin_settings(std::string pluginSettings[4])
 {
     std::string            error;
@@ -120,6 +149,8 @@ bool apply_plugin_settings(std::string pluginSettings[4])
         }
 
         pluginType = (CorePluginType)(i + 1);
+
+        l_PluginContext[(int)pluginType] = get_plugin_context_name(pluginType);
 
         if (settingValue != l_PluginFiles[i])
         {
@@ -179,7 +210,7 @@ bool apply_plugin_settings(std::string pluginSettings[4])
             }
 
             // attempt to start plugin
-            ret = plugin->Startup(m64p::Core.GetHandle(), nullptr, nullptr);
+            ret = plugin->Startup(m64p::Core.GetHandle(), (void*)l_PluginContext[(int)pluginType].c_str(), CoreDebugCallback);
             if (ret != M64ERR_SUCCESS)
             {
                 error = "apply_plugin_settings (";

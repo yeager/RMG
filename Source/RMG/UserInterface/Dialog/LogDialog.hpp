@@ -33,7 +33,7 @@ class LogDialog : public QDialog, private Ui::LogDialog
 
     void Clear(void);
   public slots:
-    void AddLogLine(CoreDebugMessageType type, QString line);
+    void AddLogLine(CoreDebugMessageType type, QString context, QString line);
 };
 } // namespace Dialog
 } // namespace UserInterface

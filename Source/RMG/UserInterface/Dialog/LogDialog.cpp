@@ -27,26 +27,28 @@ LogDialog::~LogDialog(void)
 {
 }
 
-void LogDialog::AddLogLine(CoreDebugMessageType type, QString line)
+void LogDialog::AddLogLine(CoreDebugMessageType type, QString context, QString line)
 {
     QString text;
+
+    text = context;
 
     switch (type)
     {
     case CoreDebugMessageType::Error:
-        text = "[ERROR]   ";
+        text += "[ERROR]   ";
         break;
     case CoreDebugMessageType::Info:
-        text = "[INFO]    ";
+        text += "[INFO]    ";
         break;
     case CoreDebugMessageType::Verbose:
-        text = "[VERBOSE] ";
+        text += "[VERBOSE] ";
         break;
     case CoreDebugMessageType::Warning:
-        text = "[WARNING] ";
+        text += "[WARNING] ";
         break;
     case CoreDebugMessageType::Status:
-        text = "[STATUS]  ";
+        text += "[STATUS]  ";
         break;
     }
 
