@@ -29,6 +29,9 @@
 #include <QListWidget>
 #include <QStackedWidget>
 
+// forward declaration of internal struct
+struct RomBrowserModelData;
+
 namespace UserInterface
 {
 namespace Widget
@@ -73,15 +76,18 @@ class RomBrowserWidget : public QStackedWidget
     QAction* action_RomInformation;
     QAction* action_EditGameSettings;
     QAction* action_EditCheats;
+    QAction* action_SetCoverImage;
+    QAction* action_RemoveCoverImage;
 
     QString coversDirectory;
 
     QStandardItemModel* getCurrentModel(void);
     QAbstractItemView*  getCurrentModelView(void);
+    bool getCurrentData(RomBrowserModelData& data);
 
     QString getCurrentRom(void);
 
-    QIcon getCurrentCover(CoreRomHeader header, CoreRomSettings settings);
+    QIcon getCurrentCover(CoreRomHeader header, CoreRomSettings settings, QString& coverFileName);
 
   protected:
     void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
@@ -106,6 +112,8 @@ class RomBrowserWidget : public QStackedWidget
     void on_Action_RomInformation(void);
     void on_Action_EditGameSettings(void);
     void on_Action_EditCheats(void);
+    void on_Action_SetCoverImage(void);
+    void on_Action_RemoveCoverImage(void);
 
   signals:
     void PlayGame(QString);

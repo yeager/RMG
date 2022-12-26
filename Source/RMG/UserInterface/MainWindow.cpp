@@ -1008,9 +1008,12 @@ void MainWindow::on_Action_System_SaveAs(void)
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save State"), "", tr("Save State (*.state);;All Files (*)"));
 
-    if (!CoreSaveState(fileName.toStdU32String()))
+    if (!fileName.isEmpty())
     {
-        this->showMessageBox("Error", "CoreSaveState() Failed", QString::fromStdString(CoreGetError()));
+        if (!CoreSaveState(fileName.toStdU32String()))
+        {
+            this->showMessageBox("Error", "CoreSaveState() Failed", QString::fromStdString(CoreGetError()));
+        }
     }
 
     if (isRunning && !isPaused)
@@ -1040,9 +1043,12 @@ void MainWindow::on_Action_System_Load(void)
     QString fileName =
         QFileDialog::getOpenFileName(this, tr("Open Save State"), "", tr("Save State (*.dat *.state);;All Files (*)"));
 
-    if (!CoreLoadSaveState(fileName.toStdU32String()))
+    if (!fileName.isEmpty())
     {
-        this->showMessageBox("Error", "CoreLoadSaveState() Failed", QString::fromStdString(CoreGetError()));
+        if (!CoreLoadSaveState(fileName.toStdU32String()))
+        {
+            this->showMessageBox("Error", "CoreLoadSaveState() Failed", QString::fromStdString(CoreGetError()));
+        }
     }
 
     if (isRunning && !isPaused)
