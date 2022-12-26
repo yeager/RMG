@@ -602,8 +602,12 @@ void RomBrowserWidget::on_Action_SetCoverImage(void)
         QDir().mkdir(this->coversDirectory);
     }
 
-    // remove old cover
-    if (!data.coverFile.isEmpty() && QFile::exists(data.coverFile))
+    // remove old cover when
+    // cover file exists
+    // and contains the MD5
+    if (!data.coverFile.isEmpty() && 
+        QFile::exists(data.coverFile) &&
+        data.coverFile.contains(QString::fromStdString(data.settings.MD5)))
     {
         QFile::remove(data.coverFile);
     }
