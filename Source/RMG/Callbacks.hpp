@@ -27,6 +27,8 @@ public:
     bool Init(void);
     void Stop(void);
 
+    void LoadSettings(void);
+
 private:
     static void coreDebugCallback(CoreDebugMessageType type, std::string context, std::string message);
 

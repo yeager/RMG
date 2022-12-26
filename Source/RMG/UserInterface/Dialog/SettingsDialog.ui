@@ -1901,6 +1901,33 @@
                </item>
               </layout>
              </widget>
+             <widget class="QWidget" name="tab_5">
+              <attribute name="title">
+               <string>Log Window</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QCheckBox" name="showVerboseLogMessagesCheckBox">
+                 <property name="text">
+                  <string>Show Verbose Messages</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>503</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
              <widget class="QWidget" name="tab_4">
               <attribute name="title">
                <string>Styles</string>

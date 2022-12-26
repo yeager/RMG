@@ -1138,13 +1138,15 @@ void MainWindow::on_Action_Settings_Settings(void)
     // up-to-date
     this->updateActions(emulationThread->isRunning(), isPaused);
 
+    // update core callbacks settings
+    this->coreCallBacks->LoadSettings();
+
     if (isRunning && !isPaused)
     {
         this->on_Action_System_Pause();
     }
 }
 
-#include <iostream>
 void MainWindow::on_Action_View_Toolbar(bool checked)
 {
     CoreSettingsSetValue(SettingsID::GUI_Toolbar, checked);
@@ -1323,6 +1325,7 @@ void MainWindow::on_RomBrowser_EditGameSettings(QString file)
     dialog.exec();
 
     this->updateActions(false, false);
+    this->coreCallBacks->LoadSettings();
 
     if (!CoreCloseRom())
     {

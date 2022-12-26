@@ -13,6 +13,7 @@ enum class SettingsID
     GUI_PauseEmulationOnFocusLoss,
     GUI_ResumeEmulationOnFocus,
     GUI_AutomaticFullscreen,
+    GUI_ShowVerboseLogMessages,
     GUI_Toolbar,
     GUI_StatusBar,
     GUI_Style,
