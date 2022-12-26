@@ -80,17 +80,10 @@ void RomSearcherThread::searchDirectory(QString directory)
     bool            ret;
     int             count = 0;
 
-    QStringList romFiles;
-
     while (romDirIt.hasNext())
     {
-        romFiles.push_back(romDirIt.next());
-    }
+        QString file = romDirIt.next();
 
-    romFiles.sort();
-
-    for (QString& file : romFiles)
-    {
         QElapsedTimer timer;
         timer.start();
 
