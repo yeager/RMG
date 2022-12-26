@@ -23,6 +23,7 @@
 #include "m64p/Api.hpp"
 
 #include <filesystem>
+#include <cstring>
 
 //
 // Local Variables
@@ -30,7 +31,7 @@
 
 static m64p::PluginApi l_Plugins[(int)CorePluginType::Input];
 static std::string     l_PluginFiles[(int)CorePluginType::Input];
-static std::string     l_PluginContext[(int)CorePluginType::Input];
+static char l_PluginContext[(int)CorePluginType::Input][20];
 
 //
 // Local Functions
@@ -150,7 +151,8 @@ bool apply_plugin_settings(std::string pluginSettings[4])
 
         pluginType = (CorePluginType)(i + 1);
 
-        l_PluginContext[(int)pluginType] = get_plugin_context_name(pluginType);
+        // copy context string to a c string using strcpy
+        std::strcpy(l_PluginContext[(int)pluginType], get_plugin_context_name(pluginType).c_str());
 
         if (settingValue != l_PluginFiles[i])
         {
@@ -210,7 +212,7 @@ bool apply_plugin_settings(std::string pluginSettings[4])
             }
 
             // attempt to start plugin
-            ret = plugin->Startup(m64p::Core.GetHandle(), (void*)l_PluginContext[(int)pluginType].c_str(), CoreDebugCallback);
+            ret = plugin->Startup(m64p::Core.GetHandle(), (void*)l_PluginContext[(int)pluginType], CoreDebugCallback);
             if (ret != M64ERR_SUCCESS)
             {
                 error = "apply_plugin_settings (";
