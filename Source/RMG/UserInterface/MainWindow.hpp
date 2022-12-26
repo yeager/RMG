@@ -97,7 +97,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindow
     void configureUI(QApplication*);
     void configureTheme(QApplication*);
 
-    void showMessageBox(QString, QString, QString);
+    void showErrorMessage(QString, QString);
     
     void updateUI(bool, bool);
 
