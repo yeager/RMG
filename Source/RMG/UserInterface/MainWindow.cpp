@@ -1268,7 +1268,34 @@ void MainWindow::on_RomBrowser_RomInformation(QString file)
         this->ui_Widget_RomBrowser->StopRefreshRomList();
     }
 
-    Dialog::RomInfoDialog dialog(file, this);
+    CoreRomHeader romHeader;
+    CoreRomSettings romSettings;
+
+    if (!CoreOpenRom(file.toStdU32String()))
+    {
+        this->showMessageBox("Error", "CoreOpenRom() Failed", QString::fromStdString(CoreGetError()));
+        return;
+    }
+
+    if (!CoreGetCurrentRomHeader(romHeader))
+    {
+        this->showMessageBox("Error", "CoreGetCurrentRomHeader() Failed", QString::fromStdString(CoreGetError()));
+        return;
+    }
+
+    if (!CoreGetCurrentRomSettings(romSettings))
+    {
+        this->showMessageBox("Error", "CoreGetCurrentRomSettings() Failed", QString::fromStdString(CoreGetError()));
+        return;
+    }
+
+    if (!CoreCloseRom())
+    {
+        this->showMessageBox("Error", "CoreCloseRom() Failed", QString::fromStdString(CoreGetError()));
+        return;
+    }
+
+    Dialog::RomInfoDialog dialog(file, romHeader, romSettings, this);
     dialog.exec();
 
     if (isRefreshingRomList)
