@@ -596,6 +596,12 @@ void RomBrowserWidget::on_Action_SetCoverImage(void)
     newFileName += ".";
     newFileName += sourceFileInfo.suffix();
 
+    // create covers directory when needed
+    if (!QDir().exists(this->coversDirectory))
+    {
+        QDir().mkdir(this->coversDirectory);
+    }
+
     // remove old cover
     if (!data.coverFile.isEmpty() && QFile::exists(data.coverFile))
     {
