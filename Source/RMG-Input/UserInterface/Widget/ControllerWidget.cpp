@@ -485,8 +485,9 @@ void ControllerWidget::on_removeProfileButton_clicked()
 
 void ControllerWidget::on_setupButton_clicked()
 {
+    std::cout << "on_setupButton_clicked" << std::endl;
     this->currentInSetup = true;
-    this->currentSetupButtonWidgetIndex = 0;
+    this->currentSetupButtonWidgetIndex = 1;
 
     this->setupButtonWidgets.at(0)->setFocus(Qt::OtherFocusReason);
     this->setupButtonWidgets.at(0)->click();
@@ -533,6 +534,7 @@ void ControllerWidget::on_CustomButton_TimerFinished(CustomButton* button)
 
     button->RestoreState();
 
+    this->currentInSetup = false;
     this->enableAllChildren();
 }
 
@@ -593,6 +595,11 @@ void ControllerWidget::on_MainDialog_SdlEvent(SDL_Event* event)
                         0,
                         sdlButtonName
                     );
+
+                    if (this->currentInSetup && this->currentSetupButtonWidgetIndex < this->setupButtonWidgets.size())
+                    {
+                        this->setupButtonWidgets.at(this->currentSetupButtonWidgetIndex++)->click();
+                    }
                 }
                 break;
             }
@@ -645,7 +652,7 @@ void ControllerWidget::on_MainDialog_SdlEvent(SDL_Event* event)
         } break;
 
         case SDL_CONTROLLERAXISMOTION:
-        case SDL_JOYAXISMOTION:
+        //case SDL_JOYAXISMOTION:
         { // gamepad & joystick axis
             SDL_JoystickID joystickId = -1;
             InputType inputType = InputType::Invalid;
@@ -701,12 +708,43 @@ void ControllerWidget::on_MainDialog_SdlEvent(SDL_Event* event)
                             sdlAxisName += sdlAxisDirection > 0 ? "+" : "-";
                         }
                     }
+
+                    if (currentInSetup)
+                    {
+                        CustomButton* previousButton = nullptr;
+                        std::cout << this->currentSetupButtonWidgetIndex  << std::endl;
+                        if (this->currentSetupButtonWidgetIndex >= 2)
+                        {
+                            previousButton = this->setupButtonWidgets.at(this->currentSetupButtonWidgetIndex - 2);
+                        }
+                        
+                        if (previousButton != nullptr)
+                        {
+                            std::cout << "prev: " << previousButton->objectName().toStdString() << std::endl;
+                            std::cout << "curr: " << currentButton->objectName().toStdString() << std::endl;
+                        }
+
+                        if (previousButton != nullptr  &&
+                            previousButton->GetInputType() == inputType &&
+                            previousButton->GetInputData() == sdlAxis &&
+                            previousButton->GetExtraInputData() == sdlAxisDirection)
+                        {
+                            std::cout << "aaaa break" << std::endl;
+                            break;
+                        }
+                    }
+
                     this->currentButton->SetInputData(
                         inputType, 
                         sdlAxis,
                         sdlAxisDirection,
                         sdlAxisName
                     );
+
+                    if (this->currentInSetup && this->currentSetupButtonWidgetIndex < this->setupButtonWidgets.size())
+                    {
+                        this->setupButtonWidgets.at(this->currentSetupButtonWidgetIndex++)->click();
+                    }
                 }
                 break;
             }

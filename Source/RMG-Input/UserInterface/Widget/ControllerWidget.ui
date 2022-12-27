@@ -858,6 +858,13 @@
         </spacer>
        </item>
        <item>
+        <widget class="QPushButton" name="setupButton">
+         <property name="text">
+          <string>Setup</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="resetButton">
          <property name="text">
           <string>Reset</string>
