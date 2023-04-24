@@ -97,3 +97,56 @@ jobs:
         with:
           name: RMG-Setup-Windows64-${{ env.GIT_REVISION }}
           path: Bin/*.exe
+  Windows-Qt5:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: hendrikmuhs/ccache-action@v1.2.5
+        with:
+          key: Windows-Qt5
+      - uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-hidapi
+            mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-hidapi
+            mingw-w64-x86_64-speexdsp
+            mingw-w64-x86_64-libsamplerate
+            mingw-w64-x86_64-nasm
+            mingw-w64-x86_64-minizip
+            git
+      - name: Prepare Environment
+        run: |
+          $env:revision = git describe --tags --always
+          echo "GIT_REVISION=$env:revision" >> $env:GITHUB_ENV
+        shell: pwsh
+      - name: Build RMG (Portable)
+        run: |
+          sed -i 's|-DPORTABLE_INSTALL=ON|-DPORTABLE_INSTALL=ON -DUSE_QT5=ON -DUPDATER=OFF|g' ./Source/Script/Build.sh
+          sed -i 's|windeployqt-qt6|windeployqt|g' ./Source/Script/BundleDependencies.sh
+          ./Source/Script/Build.sh Release
+        shell: msys2 {0}
+      - name: Create Installer
+        run: .\Build\Release\Source\Installer\CreateInstaller.bat
+      - name: Upload RMG (Portable)
+        uses: actions/upload-artifact@v3
+        with:
+          name: RMG-Portable-Qt5-Windows64-${{ env.GIT_REVISION }}
+          path: Bin/Release/*
+      - name: Upload RMG (Installer)
+        uses: actions/upload-artifact@v3
+        with:
+          name: RMG-Setup-Qt5-Windows64-${{ env.GIT_REVISION }}
+          path: Bin/*.exe
