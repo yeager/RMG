@@ -28,6 +28,7 @@
 #include <QGuiApplication>
 #include <QStyleFactory>
 #include <QFileDialog>
+#include <QDateTime>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
