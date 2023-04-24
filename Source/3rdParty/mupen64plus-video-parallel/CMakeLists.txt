@@ -8,6 +8,13 @@ include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API -DGRANITE_VULKAN_MT)
 
 option(CONFIG_GUI "Enables Qt configuration GUI)" OFF)
+option(USE_QT5 "Enables usage of Qt5 instead of Qt6" OFF)
+
+if (USE_QT5)
+    set(QT_VERSION Qt5)
+else(USE_QT5)
+    set(QT_VERSION Qt6)
+endif(USE_QT5)
 
 # check for INTERPROCEDURAL_OPTIMIZATION support
 if((${CMAKE_VERSION} VERSION_EQUAL 3.9) OR (${CMAKE_VERSION} VERSION_GREATER 3.9))
@@ -33,7 +40,7 @@ if (CONFIG_GUI)
     set(CMAKE_AUTORCC ON)
     set(CMAKE_AUTOUIC ON)
 
-    find_package(Qt6 COMPONENTS Gui Widgets Core REQUIRED)
+    find_package(${QT_VERSION} COMPONENTS Gui Widgets Core REQUIRED)
 endif(CONFIG_GUI)
 
 FILE(GLOB RDPSources parallel-rdp/*.cpp)
@@ -100,7 +107,7 @@ if(WIN32)
 endif(WIN32)
 
 if (CONFIG_GUI)
-    target_link_libraries(${NAME_PLUGIN_M64P} Qt6::Gui Qt6::Widgets)
+    target_link_libraries(${NAME_PLUGIN_M64P} ${QT_VERSION}::Gui ${QT_VERSION}::Widgets)
 endif(CONFIG_GUI)
 
 set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
