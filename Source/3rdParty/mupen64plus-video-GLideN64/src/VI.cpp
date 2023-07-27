@@ -321,6 +321,6 @@ void VI_UpdateScreen()
 	}
 
 	if (VI.lastOrigin == -1) { // Workaround for Mupen64Plus issue with initialization
-		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 }

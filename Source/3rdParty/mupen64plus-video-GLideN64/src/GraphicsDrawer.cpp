@@ -1707,7 +1707,7 @@ void GraphicsDrawer::clearColorBuffer(float *_pColor)
 	if (_pColor != nullptr)
 		gfxContext.clearColorBuffer(_pColor[0], _pColor[1], _pColor[2], _pColor[3]);
 	else
-		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 bool GraphicsDrawer::isClipped(u32 _v0, u32 _v1, u32 _v2) const
@@ -1919,7 +1919,7 @@ void GraphicsDrawer::_initStates()
 	gfxContext.setViewport(0, static_cast<s32>(wnd.getHeightOffset()),
 						   static_cast<s32>(wnd.getScreenWidth()), static_cast<s32>(wnd.getScreenHeight()));
 
-	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 
 	srand(static_cast<u32>(time(nullptr)));
 

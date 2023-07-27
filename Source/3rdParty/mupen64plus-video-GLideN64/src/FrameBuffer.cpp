@@ -1090,7 +1090,7 @@ void FrameBufferList::_renderScreenSizeBuffer()
 
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::defaultFramebuffer);
 
-	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 
 	GraphicsDrawer::BlitOrCopyRectParams blitParams;
 	blitParams.srcX0 = srcCoord[0];
@@ -1453,7 +1453,7 @@ void FrameBufferList::OverscanBuffer::draw(u32 _fullHeight, bool _PAL)
 	blitParams.readBuffer = m_FBO;
 	blitParams.invertY = false;
 
-	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 //	drawer.blitOrCopyTexturedRect(blitParams);
 	drawer.copyTexturedRect(blitParams);
 }
@@ -1473,7 +1473,7 @@ void FrameBufferList::renderBuffer()
 	RdpUpdateResult rdpRes;
 	if (!m_rdpUpdate.update(rdpRes)) {
 		gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, ObjectHandle::defaultFramebuffer);
-		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 		dwnd().swapBuffers();
 		if (m_pCurrent != nullptr)
 			gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_pCurrent->m_FBO);
@@ -1590,7 +1590,7 @@ void FrameBufferList::renderBuffer()
 	}
 
 	m_overscan.activate();
-	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
+	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 1.0f);
 #if defined(OS_WINDOWS)
 	gfxContext.clearDepthBuffer();
 #endif
