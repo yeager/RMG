@@ -6,10 +6,17 @@ toplvl_dir="$(realpath "$script_dir/../../")"
 bin_dir="$toplvl_dir/Bin/AppImage" # RMG should be installed here
 
 export QMAKE="$(which qmake6)"
+export EXTRA_PLATFORM_PLUGINS="libqwayland-generic.so"
 export EXTRA_QT_PLUGINS="imageformats;iconengines;"
 export VERSION="$(git describe --tags --always)"
 export OUTPUT="$bin_dir/../RMG-Portable-Linux64-$VERSION.AppImage"
 export LD_LIBRARY_PATH="$toplvl_dir/Build/AppImage/Source/RMG-Core" # hack
+
+# hack because we cannot deploy integration plugins with linuxdeploy-qt,
+# so copy it over manually
+plugins_dir="$("$QMAKE" -query | grep QT_INSTALL_PLUGINS | cut -d':' -f2)"
+mkdir -p "$bin_dir/usr/plugins/"
+cp -r "$plugins_dir"/wayland-* "$bin_dir/usr/plugins/"
 
 if [ ! -f "$script_dir/linuxdeploy-x86_64.AppImage" ]
 then
