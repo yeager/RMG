@@ -1398,7 +1398,6 @@ void MainWindow::on_Action_System_HardReset(void)
 }
 void MainWindow::on_Action_System_Pause(void)
 {
-    bool isRunning = CoreIsEmulationRunning();
     bool isPaused = CoreIsEmulationPaused();
 
     bool ret;
@@ -1553,7 +1552,6 @@ void MainWindow::on_Action_System_Load(void)
 
 void MainWindow::on_Action_System_CurrentSaveState(int slot)
 {
-    QAction* slotAction;
     QString dateTimeText;
     std::string message;
 
