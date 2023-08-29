@@ -42,7 +42,7 @@
 #define SDL_UnlockAudio() SDL_UnlockAudioDevice(sdl_backend->device)
 #define SDL_PauseAudio(A) SDL_PauseAudioDevice(sdl_backend->device, A)
 #define SDL_CloseAudio() SDL_CloseAudioDevice(sdl_backend->device)
-#define SDL_OpenAudio(A, B) ((sdl_backend->device = SDL_OpenAudioDevice(nullptr, 0, A, B, 0)) - 1)
+#define SDL_OpenAudio(A, B) (sdl_backend->device = SDL_OpenAudioDevice(nullptr, 0, A, B, 0))
 struct sdl_backend
 {
     /* Audio Device */
@@ -193,7 +193,7 @@ static void sdl_init_audio_device(struct sdl_backend* sdl_backend)
     DebugMessage(M64MSG_VERBOSE, "Requesting format: " AFMT_FMTSPEC ".", AFMT_ARGS(desired.format));
 
     /* Open the audio device */
-    if (SDL_OpenAudio(&desired, &obtained) < 0)
+    if (SDL_OpenAudio(&desired, &obtained) == 0)
     {
         DebugMessage(M64MSG_ERROR, "Couldn't open audio: %s", SDL_GetError());
         sdl_backend->error = 1;

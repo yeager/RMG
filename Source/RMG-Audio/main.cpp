@@ -61,8 +61,6 @@ static AUDIO_INFO AudioInfo;
 // volume to scale the audio by, range of 0..100
 // if muted, this holds the volume when not muted
 static int VolPercent = 80;
-// how much percent to increment/decrement volume by
-static int VolDelta = 5;
 // the actual volume passed into SDL, range of 0..SDL_MIX_MAXVOLUME
 static int VolSDL = SDL_MIX_MAXVOLUME;
 // Muted or not
@@ -110,11 +108,6 @@ void DebugMessage(int level, const char *message, ...)
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context,
                                    void (*DebugCallback)(void *, int, const char *))
 {
-    ptr_CoreGetAPIVersions CoreAPIVersionFunc;
-
-    int ConfigAPIVersion, DebugAPIVersion, VidextAPIVersion;
-    float fConfigParamsVersion = 0.0f;
-
     if (l_PluginInit)
         return M64ERR_ALREADY_INIT;
 
@@ -203,7 +196,7 @@ static unsigned int vi_clock_from_system_type(int system_type)
     {
     default:
         DebugMessage(M64MSG_WARNING, "Invalid system_type %d. Assuming NTSC", system_type);
-        /* fallback */
+        [[fallthrough]];
     case SYSTEM_NTSC: return 48681812;
     case SYSTEM_PAL:  return 49656530;
     case SYSTEM_MPAL: return 48628316;

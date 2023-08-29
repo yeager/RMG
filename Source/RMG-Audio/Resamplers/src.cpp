@@ -181,7 +181,7 @@ static size_t src_resample(void* resampler,
         return src_size;
     }
 
-    if (dst_size != src_data.output_frames_gen*4) {
+    if (dst_size != (size_t)src_data.output_frames_gen*4) {
         DebugMessage(M64MSG_WARNING, "dst_size = %u != output_frames_gen*4 = %u",
                 (uint32_t) dst_size, (uint32_t) src_data.output_frames_gen*4);
     }
