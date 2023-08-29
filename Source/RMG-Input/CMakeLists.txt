@@ -8,6 +8,12 @@ set(CMAKE_AUTOUIC ON)
 # disable lib prefix
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
+# C++20 without extensions with all warnings
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wno-unused-parameter")
+
 find_package(Qt6 COMPONENTS Gui Widgets Core Svg REQUIRED)
 
 find_package(PkgConfig REQUIRED)

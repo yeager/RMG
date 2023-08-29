@@ -5,6 +5,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# C++20 without extensions with all warnings
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wno-unused-parameter")
+
 find_package(Qt6 COMPONENTS Gui Widgets Core OpenGL REQUIRED)
 
 if (PORTABLE_INSTALL)
