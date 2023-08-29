@@ -83,12 +83,12 @@ HotkeysDialog::HotkeysDialog(QWidget* parent, QList<HotkeySettingMapping> hotkey
     this->infoIconLabel_5->setPixmap(QIcon::fromTheme("information-line").pixmap(16, 16));
 
     // load settings from given mappings
-    for (int i = 0; i < hotkeySettingMappings.size(); i++)
+    for (qsizetype i = 0; i < hotkeySettingMappings.size(); i++)
     {
         auto& buttonMapping = this->hotkeySettingMappings.at(i);
         auto& givenMapping  = hotkeySettingMappings.at(i);
 
-        for (int y = 0; y < givenMapping.inputTypes.size(); y++)
+        for (size_t y = 0; y < givenMapping.inputTypes.size(); y++)
         {
             buttonMapping.button->AddInputData(
                 (InputType)givenMapping.inputTypes.at(y),
@@ -321,7 +321,7 @@ void HotkeysDialog::on_HotkeyButton_StateFinished(Widget::HotkeyButton* button)
     std::vector<int> inputData = button->GetInputData();
     std::vector<int> extraInputData = button->GetExtraInputData();
 
-    for (auto& mapping : this->hotkeySettingMappings)
+    for (const auto& mapping : this->hotkeySettingMappings)
     {
         // skip ourselves
         if (mapping.button == button)
@@ -342,9 +342,9 @@ QList<HotkeySettingMapping> HotkeysDialog::GetSettingMappings()
 {
     QList<HotkeySettingMapping> mappings;
 
-    for (auto& mapping : this->hotkeySettingMappings)
+    for (const auto& mapping : this->hotkeySettingMappings)
     {
-        mappings.append({ 
+        mappings.append({
             mapping.button->GetInputType(),
             mapping.button->GetInputData(),
             mapping.button->GetExtraInputData(),

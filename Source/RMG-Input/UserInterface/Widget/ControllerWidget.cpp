@@ -310,7 +310,7 @@ void ControllerWidget::removeDuplicates(MappingButton* button)
             continue;
         }
 
-        for (int i = 0; i < inputType.size(); i++)
+        for (size_t i = 0; i < inputType.size(); i++)
         {
             if (buttonWidget->HasInputData((InputType)inputType.at(i), inputData.at(i), extraInputData.at(i)))
             {
@@ -521,7 +521,7 @@ void ControllerWidget::RemoveInputDevice(QString deviceName, int deviceNum)
 {
     inputDeviceNameList.removeOne(deviceName);
 
-    for (int i = 0; i < this->inputDeviceComboBox->count(); i++)
+    for (qsizetype i = 0; i < this->inputDeviceComboBox->count(); i++)
     {
         int tmpNum = this->inputDeviceComboBox->itemData(i).toInt();
         QString tmpName = this->inputDeviceComboBox->itemText(i);
@@ -773,8 +773,6 @@ void ControllerWidget::on_addProfileButton_clicked()
 
 void ControllerWidget::on_removeProfileButton_clicked()
 {
-    bool ret;
-
     if (this->profileComboBox->currentData().toString() == this->settingsSection)
     {
         QMessageBox messageBox(this);
@@ -1622,7 +1620,7 @@ void ControllerWidget::LoadSettings(QString sectionQString, bool loadUserProfile
         std::vector<int> data          = CoreSettingsGetIntListValue(buttonSetting.dataSettingsId, section);
         std::vector<int> extraData     = CoreSettingsGetIntListValue(buttonSetting.extraDataSettingsId, section);
 
-        int count = std::min(extraData.size(), std::min(types.size(), std::min(names.size(), data.size())));
+        size_t count = std::min(extraData.size(), std::min(types.size(), std::min(names.size(), data.size())));
 
         if (count == 0)
         { // attempt to load old profile type
@@ -1634,7 +1632,7 @@ void ControllerWidget::LoadSettings(QString sectionQString, bool loadUserProfile
         }
 
         // add all input data
-        for (int i = 0; i < count; i++)
+        for (size_t i = 0; i < count; i++)
         {
             buttonSetting.button->AddInputData((InputType)types[i], data[i], extraData[i], QString::fromStdString(names.at(i)));
         }
