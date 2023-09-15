@@ -19,7 +19,7 @@
 #include <iostream>
 
 #include <QByteArray>
-#include <QStringDecoder>
+//#include <QStringDecoder>
 #include <QStringList>
 #include <QJsonDocument>
 #include <QJsonArray>
@@ -404,19 +404,19 @@ EXPORT void CALL SendVRUWord(uint16_t length, uint16_t* word, uint8_t lang)
     }
     else
     { // not found
-        QStringDecoder utf8_decoder = QStringDecoder(QStringDecoder::Utf8);
-        QString encoded_string = utf8_decoder.decode(byte_array);
+       // QStringDecoder utf8_decoder = QStringDecoder(QStringDecoder::Utf8);
+        //QString encoded_string = utf8_decoder.decode(byte_array);
 
         if (utf8_decoder.hasError())
         {
-            debugMessage = "VRU: unknown word: ";
-            debugMessage += encoded_string.toStdString();
+            debugMessage = "VRU: unknown word!";
+          //  debugMessage += encoded_string.toStdString();
             PluginDebugMessage(M64MSG_ERROR, debugMessage);
         }
         else
         {
-            l_RegisteredWords.append(encoded_string);
-            l_RegisteredWordsIndex.append(l_WordListCount);
+            //l_RegisteredWords.append(encoded_string);
+            //l_RegisteredWordsIndex.append(l_WordListCount);
         }
     }
 
