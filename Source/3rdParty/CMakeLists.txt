@@ -159,7 +159,7 @@ ExternalProject_Add(mupen64plus-video-angrylion-plus
     CMAKE_ARGS -DBUILD_MUPEN64PLUS=ON -DBUILD_PROJECT64=OFF -DUSE_QT5={USE_QT5} ${CMAKE_CONFIGURE_ARGS}
     BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/mupen64plus-video-angrylion-plus
 
-    BUILD_BYPRODUCTS ${THIRDPARTY_DIR}/mupen64plus-video-angrylion-plus/mupen64plus-video-angrylion-plus.${SO_EXT}
+    BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/mupen64plus-video-angrylion-plus/mupen64plus-video-angrylion-plus.${SO_EXT}
     DEPENDS mupen64plus-core
 )
 
