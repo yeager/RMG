@@ -372,7 +372,7 @@ void MainWindow::showErrorMessage(QString text, QString details, bool force)
     // update the message box list and ensure
     // that we don't already have one open with
     // the error that we want to display
-    for (const QMessageBox* messageBox : this->ui_MessageBoxList)
+    for (QMessageBox* messageBox : this->ui_MessageBoxList)
     {
         if (!messageBox->isVisible())
         {
