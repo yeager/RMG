@@ -220,16 +220,29 @@ static void load_inputmapping_settings(InputMapping* mapping, std::string sectio
 static void load_settings(void)
 {
     std::string gameId;
+    CoreRomHeader romHeader;
     CoreRomSettings romSettings;
 
     std::string userProfileSectionBase = "Rosalie's Mupen GUI - Input Plugin User Profile";
     std::vector<std::string> userProfiles;
     std::vector<std::string>::iterator userProfilesIter;
+    bool useGameIDForGameProfiles = false;
+
+    useGameIDForGameProfiles = CoreSettingsGetBoolValue(SettingsID::Input_UseGameID);
 
     // try to retrieve current ROM settings
-    if (CoreGetCurrentRomSettings(romSettings))
+    if (CoreGetCurrentRomHeader(romHeader) &&
+        CoreGetCurrentRomSettings(romSettings))
     {
-        gameId = romSettings.MD5;
+        if (useGameIDForGameProfiles &&
+            romHeader.GameID != "????")
+        { // GameID
+            gameId = romHeader.GameID;
+        }
+        else
+        { // MD5
+            gameId = romSettings.MD5;
+        }
     }
 
     // retrieve all user profiles

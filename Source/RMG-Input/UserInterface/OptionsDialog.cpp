@@ -30,6 +30,7 @@ OptionsDialog::OptionsDialog(QWidget* parent, OptionsDialogSettings settings,
     this->removeDuplicateMappingsCheckbox->setChecked(settings.RemoveDuplicateMappings);
     this->filterEventsForButtonsCheckBox->setChecked(settings.FilterEventsForButtons);
     this->filterEventsForAxisCheckBox->setChecked(settings.FilterEventsForAxis);
+    this->useGameIDCheckBox->setChecked(settings.UseGameIDInsteadOfMD5);
 
     if (!CoreIsEmulationRunning() && !CoreIsEmulationPaused())
     {
@@ -85,6 +86,7 @@ void OptionsDialog::accept()
     this->settings.RemoveDuplicateMappings = this->removeDuplicateMappingsCheckbox->isChecked();
     this->settings.FilterEventsForButtons = this->filterEventsForButtonsCheckBox->isChecked();
     this->settings.FilterEventsForAxis = this->filterEventsForAxisCheckBox->isChecked();
+    this->settings.UseGameIDInsteadOfMD5 = this->useGameIDCheckBox->isChecked();
 
     QDialog::accept();
 }

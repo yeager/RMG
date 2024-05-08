@@ -28,6 +28,9 @@ struct OptionsDialogSettings
     bool RemoveDuplicateMappings = false;
     bool FilterEventsForButtons  = true;
     bool FilterEventsForAxis     = true;
+
+    // Advanced settings
+    bool UseGameIDInsteadOfMD5   = false;
 };
 
 namespace UserInterface

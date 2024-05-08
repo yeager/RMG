@@ -1463,6 +1463,8 @@ void ControllerWidget::LoadSettings()
         this->SaveDefaultSettings();
     }
 
+    this->optionsDialogSettings.UseGameIDInsteadOfMD5 = CoreSettingsGetBoolValue(SettingsID::Input_UseGameID);
+
     // try to retrieve the current rom's settings & header,
     // if that succeeds, we know we're ingame
     // and then we'll add a game specific profile to the combobox
@@ -1471,7 +1473,16 @@ void ControllerWidget::LoadSettings()
     if (CoreGetCurrentRomSettings(romSettings) &&
         CoreGetCurrentRomHeader(romHeader))
     {
-        this->gameSection = section + " Game " + QString::fromStdString(romSettings.MD5);
+        this->gameSection = section + " Game ";
+        if (this->optionsDialogSettings.UseGameIDInsteadOfMD5 &&
+            romHeader.GameID != "????")
+        { // GameID
+            section += QString::fromStdString(romHeader.GameID);
+        }
+        else
+        { // MD5
+            section += QString::fromStdString(romSettings.MD5);
+        }
 
         // use internal rom name
         QString internalName = QString::fromStdString(romHeader.Name);
@@ -1791,6 +1802,8 @@ void ControllerWidget::SaveSettings(QString section)
     }
 
     this->GetCurrentInputDevice(deviceName, deviceNum, true);
+
+    CoreSettingsSetValue(SettingsID::Input_UseGameID, this->optionsDialogSettings.UseGameIDInsteadOfMD5);
 
     CoreSettingsSetValue(SettingsID::Input_PluggedIn, sectionStr, this->IsPluggedIn());
     CoreSettingsSetValue(SettingsID::Input_DeviceName, sectionStr, deviceName.toStdString());
