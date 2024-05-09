@@ -30,8 +30,8 @@
 
 #include <string.h>
 
-#define RDRAM_BCAST_ADDRESS_MASK UINT32_C(0x00080000)
-
+#define RDRAM_BCAST_ADDRESS_MASK  UINT32_C(0x00080000)
+#define RDRAM_CURRENT_CONTROL_BIT UINT32_C(0x80000000)
 
 /* XXX: deduce # of RDRAM modules from it's total size
  * Assume only 2Mo RDRAM modules.
@@ -65,10 +65,12 @@ static osal_inline uint16_t idfield_value(uint32_t device_id)
 
 static size_t get_module(const struct rdram* rdram, uint32_t address)
 {
+    // TODO: fix this...
+    return address >> 13 & 3;
+
     size_t module;
     size_t modules = get_modules_count(rdram);
     uint16_t id_field = ri_address_to_id_field(address);
-
 
     for (module = 0; module < modules; ++module) {
         if (id_field == idfield_value(rdram->regs[module][RDRAM_DEVICE_ID_REG])) {
@@ -80,48 +82,6 @@ static size_t get_module(const struct rdram* rdram, uint32_t address)
      * it probes potentialy non present RDRAM */
     return RDRAM_MAX_MODULES_COUNT;
 }
-
-static void read_rdram_dram_corrupted(void* opaque, uint32_t address, uint32_t* value)
-{
-    struct rdram* rdram = (struct rdram*)opaque;
-    uint32_t addr = rdram_dram_address(address);
-    size_t module;
-
-    *value = rdram->dram[addr];
-
-    module = get_module(rdram, address);
-    if (module == RDRAM_MAX_MODULES_COUNT) {
-        *value = 0;
-        return;
-    }
-
-    /* corrupt read value if CC value is not calibrated */
-    uint32_t mode = rdram->regs[module][RDRAM_MODE_REG] ^ UINT32_C(0xc0c0c0c0);
-    if ((mode & 0x80000000) && (cc_value(mode) == 0)) {
-        *value = 0;
-    }
-}
-
-static void map_corrupt_rdram(struct rdram* rdram, int corrupt)
-{
-    struct mem_mapping mapping;
-
-    mapping.begin = MM_RDRAM_DRAM;
-    mapping.end = MM_RDRAM_DRAM + rdram->dram_size - 1;
-    mapping.type = M64P_MEM_RDRAM;
-    mapping.handler.opaque = rdram;
-    mapping.handler.read32 = (corrupt)
-        ? read_rdram_dram_corrupted
-        : read_rdram_dram;
-    mapping.handler.write32 = write_rdram_dram;
-
-    apply_mem_mapping(rdram->r4300->mem, &mapping);
-#ifndef NEW_DYNAREC
-    rdram->r4300->recomp.fast_memory = (corrupt) ? 0 : 1;
-    invalidate_r4300_cached_code(rdram->r4300, 0, 0);
-#endif
-}
-
 
 void init_rdram(struct rdram* rdram,
                 uint32_t* dram,
@@ -154,7 +114,6 @@ void poweron_rdram(struct rdram* rdram)
         rdram->regs[module][RDRAM_DEVICE_MANUF_REG] = UINT32_C(0x00000500);
     }
 }
-
 
 void read_rdram_regs(void* opaque, uint32_t address, uint32_t* value)
 {
@@ -190,28 +149,14 @@ void write_rdram_regs(void* opaque, uint32_t address, uint32_t value, uint32_t m
     size_t module;
     size_t modules = get_modules_count(rdram);
 
-    /* HACK: Detect when current Control calibration is about to start,
-     * so we can set corrupted rdram_dram handler
-     */
-    if (address & RDRAM_BCAST_ADDRESS_MASK && reg == RDRAM_DELAY_REG) {
-        map_corrupt_rdram(rdram, 1);
+#ifndef NEW_DYNAREC
+    /* HACK: toggle fast memory for dynarec */
+    if ((address & RDRAM_BCAST_ADDRESS_MASK) && 
+        (reg == RDRAM_DELAY_REG || reg == RDRAM_MODE_REG)) {
+        rdram->r4300->recomp.fast_memory = (reg == RDRAM_MODE_REG) ? 0 : 1;
+        invalidate_r4300_cached_code(rdram->r4300, 0, 0);
     }
-
-    /* HACK: Detect when current Control calibration is over,
-     * so we can restore the original rdram_dram handler
-     * and let dynarec have it's fast_memory enabled.
-     */
-    if (address & RDRAM_BCAST_ADDRESS_MASK && reg == RDRAM_MODE_REG) {
-        map_corrupt_rdram(rdram, 0);
-
-        /* HACK: In the IPL3 procedure, at this point,
-         * the amount of detected memory can be found in s4 */
-        size_t ipl3_rdram_size = r4300_regs(rdram->r4300)[20] & UINT32_C(0x0fffffff);
-        if (ipl3_rdram_size != rdram->dram_size) {
-            DebugMessage(M64MSG_WARNING, "IPL3 detected %u MB of RDRAM != %u MB",
-                (uint32_t) ipl3_rdram_size / (1024*1024), (uint32_t) rdram->dram_size / (1024*1024));
-        }
-    }
+#endif
 
     /* don't go out-of-bounds */
     if (reg >= RDRAM_REGS_COUNT) return;
@@ -234,8 +179,22 @@ void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value)
 {
     struct rdram* rdram = (struct rdram*)opaque;
     uint32_t addr = rdram_dram_address(address);
+    uint32_t module = get_module(rdram, address);
+    uint32_t mode = 0;
 
-    if (address < rdram->dram_size)
+    if (module != RDRAM_MAX_MODULES_COUNT) {
+        mode = rdram->regs[module][RDRAM_MODE_REG];
+    }
+
+    /* corrupt read value if CC value is not calibrated
+     * TODO: handle automatic mode
+     */
+    if (((mode & RDRAM_CURRENT_CONTROL_BIT) == 0) &&
+        ((cc_value(mode) ^ 63) == 0))
+    {
+        *value = 0;
+    }
+    else if (address < rdram->dram_size)
     {
         *value = rdram->dram[addr];
     }

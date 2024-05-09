@@ -33,6 +33,7 @@ void init_ri(struct ri_controller* ri, struct rdram* rdram)
 void poweron_ri(struct ri_controller* ri)
 {
     memset(ri->regs, 0, RI_REGS_COUNT*sizeof(uint32_t));
+    //ri->regs[RI_SELECT_REG] = 1;
 }
 
 
