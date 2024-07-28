@@ -139,7 +139,7 @@ void MainDialog::openInputDevice(QString deviceName, int deviceNum)
         }
     }
 
-    if (SDL_IsGameController(deviceNum) == SDL_TRUE)
+    if (false)
     {
         this->currentJoystick = nullptr;
         this->currentController = SDL_GameControllerOpen(deviceNum);
