@@ -71,6 +71,37 @@ static std::string to_lower_str(std::string str)
     return resultString;
 }
 
+static std::string get_filename_ext(const char* str)
+{
+    int len = strlen(str);
+    std::string ext;
+    bool dot = false;
+
+    ext.reserve(len);
+
+    for (int i = 0; i < len; i++)
+    {
+        if (str[i] == '/')
+        {
+            ext.clear();
+            dot = false;
+        }
+        else if (str[i] == '.')
+        {
+            ext.clear();
+            dot = true;
+        }
+        ext += str[i];
+    }
+
+    if (!dot)
+    {
+        ext.clear();
+    }
+
+    return ext;
+}
+
 static voidpf zlib_filefunc_open(voidpf opaque, const void* filename, int mode)
 {
     std::filesystem::path path = *(std::filesystem::path*)filename;
@@ -196,9 +227,7 @@ static bool read_zip_file(std::filesystem::path file, std::filesystem::path& ext
 
         // make sure file has supported file format,
         // if it does, read it in memory
-        std::filesystem::path fileNamePath(fileName);
-        std::string fileExtension = fileNamePath.has_extension() ? fileNamePath.extension().string() : "";
-        fileExtension = to_lower_str(fileExtension);
+        std::string fileExtension = to_lower_str(get_filename_ext(fileName));
         if (fileExtension == ".z64" ||
             fileExtension == ".v64" ||
             fileExtension == ".n64" ||
@@ -235,7 +264,8 @@ static bool read_zip_file(std::filesystem::path file, std::filesystem::path& ext
                 }
             } while (bytes_read > 0);
 
-            extractedFileName = fileNamePath;
+            // TODO: randomize this?
+            //extractedFileName = fileNamePath;
             isDisk            = (fileExtension == ".ndd" || fileExtension == ".d64");
             unzCloseCurrentFile(zipFile);
             unzClose(zipFile);
