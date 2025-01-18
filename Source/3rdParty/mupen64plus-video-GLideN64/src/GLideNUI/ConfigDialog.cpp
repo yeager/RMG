@@ -324,7 +324,7 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 
 	switch (config.frameBufferEmulation.aspect) {
 	case Config::aStretch:
-		ui->aspectComboBox->setCurrentIndex(2);
+		ui->aspectComboBox->setCurrentIndex(3);
 		break;
 	case Config::a43:
 		ui->aspectComboBox->setCurrentIndex(0);
@@ -332,11 +332,14 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	case Config::a169:
 		ui->aspectComboBox->setCurrentIndex(1);
 		break;
+	case Config::a4318:
+		ui->aspectComboBox->setCurrentIndex(2);
+		break;
 	case Config::aAdjust43:
-		ui->aspectComboBox->setCurrentIndex(3);
+		ui->aspectComboBox->setCurrentIndex(4);
 		break;
 	case Config::aAdjust169:
-		ui->aspectComboBox->setCurrentIndex(4);
+		ui->aspectComboBox->setCurrentIndex(5);
 		break;
 	}
 
@@ -648,15 +651,17 @@ void ConfigDialog::accept(bool justSave) {
 	config.frameBufferEmulation.N64DepthCompare = ui->n64DepthCompareComboBox->currentIndex();
 	config.frameBufferEmulation.forceDepthBufferClear = ui->forceDepthBufferClearCheckBox->isChecked() ? 1 : 0;
 
-	if (ui->aspectComboBox->currentIndex() == 2)
+	if (ui->aspectComboBox->currentIndex() == 3)
 		config.frameBufferEmulation.aspect = Config::aStretch;
 	else if (ui->aspectComboBox->currentIndex() == 0)
 		config.frameBufferEmulation.aspect = Config::a43;
 	else if (ui->aspectComboBox->currentIndex() == 1)
 		config.frameBufferEmulation.aspect = Config::a169;
-	else if (ui->aspectComboBox->currentIndex() == 3)
-		config.frameBufferEmulation.aspect = Config::aAdjust43;
+	else if (ui->aspectComboBox->currentIndex() == 2)
+		config.frameBufferEmulation.aspect = Config::a4318;
 	else if (ui->aspectComboBox->currentIndex() == 4)
+		config.frameBufferEmulation.aspect = Config::aAdjust43;
+	else if (ui->aspectComboBox->currentIndex() == 5)
 		config.frameBufferEmulation.aspect = Config::aAdjust169;
 
 	if (ui->factor0xRadioButton->isChecked())

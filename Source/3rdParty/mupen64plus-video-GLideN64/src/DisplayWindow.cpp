@@ -174,6 +174,18 @@ void DisplayWindow::_setBufferSize()
 			m_height = m_screenHeight;
 		}
 		break;
+	case Config::a4318: // force 43/18
+		if (m_screenWidth * 18 / 43 > m_screenHeight) {
+			m_height = m_screenHeight;
+			m_width = m_screenHeight * 43 / 18;
+		} else if (m_screenHeight * 43 / 18 > m_screenWidth) {
+			m_width = m_screenWidth;
+			m_height = m_screenWidth * 18 / 43;
+		} else {
+			m_width = m_screenWidth;
+			m_height = m_screenHeight;
+		}
+		break;
 	case Config::aAdjust43: // adjust
 		m_width = m_screenWidth;
 		m_height = m_screenHeight;
